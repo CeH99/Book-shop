@@ -1,0 +1,37 @@
+@startuml
+hide circle
+skinparam classAttributeIconSize 0
+
+class User {
+  - id : Long
+  - name : String
+  - email : String
+  - password : String
+  - role : String
+}
+
+class Order {
+  - id : Long
+  - orderDate : LocalDateTime
+  - status : String
+  - totalAmount : BigDecimal
+}
+
+class OrderItem {
+  - id : Long
+  - quantity : Integer
+  - price : BigDecimal
+}
+
+class Product {
+  - id : Long
+  - title : String
+  - description : String
+  - price : BigDecimal
+  - stockQuantity : Integer
+}
+
+User "1" -right- "*" Order
+Order "1" *-right- "*" OrderItem
+OrderItem "*" -right- "1" Product
+@enduml
