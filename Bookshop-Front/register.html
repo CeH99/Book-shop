@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Реєстрація - Онлайн-Книгарня</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .auth-container {
+            max-width: 450px;
+            margin: 60px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 1px solid #f0f0f0;
+        }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; }
+        .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; }
+        .error-message { color: #c91818; margin-bottom: 15px; display: none; }
+        .success-message { color: #28a745; margin-bottom: 15px; display: none; font-weight: bold; text-align: center;}
+    </style>
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-container">
+            <div class="logo">
+                <a href="index.html">Книгарня<span>.</span></a>
+            </div>
+            <nav class="main-nav">
+                <a href="index.html">Каталог</a>
+                <a href="login.html">Увійти</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="auth-container">
+            <h1 class="section-title" style="margin-bottom: 20px;">Реєстрація</h1>
+            
+            <p id="reg-error-msg" class="error-message">Помилка реєстрації. Перевірте дані.</p>
+            <p id="reg-success-msg" class="success-message">Успішно! Перенаправлення...</p>
+            
+            <form id="register-form">
+                <div class="form-group">
+                    <label for="reg-name">Ім'я:</label>
+                    <input type="text" id="reg-name" required placeholder="Іван">
+                </div>
+                <div class="form-group">
+                    <label for="reg-surname">Прізвище:</label>
+                    <input type="text" id="reg-surname" required placeholder="Франко">
+                </div>
+                <div class="form-group">
+                    <label for="reg-email">Email:</label>
+                    <input type="email" id="reg-email" required placeholder="ivan@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="reg-phone">Телефон:</label>
+                    <input type="text" id="reg-phone" placeholder="+380991234567">
+                </div>
+                <div class="form-group">
+                    <label for="reg-password">Пароль:</label>
+                    <input type="password" id="reg-password" required minlength="4">
+                </div>
+                <button type="submit" class="btn-buy">Створити акаунт</button>
+            </form>
+            <p style="margin-top: 15px; text-align: center;">
+                Вже є акаунт? <a href="login.html" style="color: #c91818;">Увійти</a>
+            </p>
+        </div>
+    </main>
+
+    <script src="js/auth.js"></script> 
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Мій профіль - Онлайн-Книгарня</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .order-card { border: 1px solid #eee; border-radius: 8px; padding: 20px; margin-bottom: 20px; background: #fff; }
+        .order-header { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
+        .order-status { font-weight: bold; padding: 5px 10px; border-radius: 4px; }
+        .status-PENDING { background: #fff3cd; color: #856404; }
+        .status-SHIPPED { background: #d4edda; color: #155724; }
+        .order-items { list-style: none; padding: 0; }
+        .order-items li { margin-bottom: 8px; color: #555; }
+    </style>
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-container">
+            <div class="logo"><a href="index.html">Книгарня<span>.</span></a></div>
+            <nav class="main-nav">
+                <a href="index.html">Каталог</a>
+                <a href="cart.html" class="cart-link">Кошик (<span id="cart-count">0</span>)</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <h1 class="section-title">Історія замовлень</h1>
+        <div id="orders-container">
+            <p>Завантаження...</p>
+        </div>
+    </main>
+
+    <script src="js/header.js"></script>
+    <script src="js/profile.js"></script>
+</body>
+</html>

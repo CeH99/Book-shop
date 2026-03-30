@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Онлайн-Книгарня</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-container">
+            <div class="logo">
+                <a href="index.html">Книгарня<span>.</span></a>
+            </div>
+            <nav class="main-nav">
+                <a href="index.html" class="active">Каталог</a>
+                <a href="login.html">Увійти</a>
+                <a href="cart.html" class="cart-link">Кошик (<span id="cart-count">0</span>)</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <section class="catalog-section">
+            <h1 class="section-title">Наші книги</h1>
+            
+            <div class="products-grid" id="products-grid">
+                <p>Завантаження книг...</p>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/header.js"></script>
+    <script src="js/catalog.js"></script> 
+</body>
+</html>
