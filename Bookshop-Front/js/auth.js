@@ -1,4 +1,4 @@
-const AUTH_URL = 'http://localhost:8080/api/auth/login';
+const AUTH_URL = 'http://56.228.80.231:8080/api/auth/login';
 
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('login-form');
@@ -52,7 +52,7 @@ async function handleLogin(event) {
 }
 
 
-const REGISTER_URL = 'http://localhost:8080/api/auth/register';
+const REGISTER_URL = 'http://56.228.80.231:8080/api/auth/register';
 
 document.addEventListener('DOMContentLoaded', () => {
     const registerForm = document.getElementById('register-form');

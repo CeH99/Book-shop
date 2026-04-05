@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:8080/api/products';
+const API_URL = 'http://56.228.80.231:8080/api/products';
 
 document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);

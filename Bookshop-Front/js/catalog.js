@@ -1,6 +1,6 @@
-const API_URL = 'http://localhost:8080/api/products';
-const API_CATEGORIES_URL = 'http://localhost:8080/api/categories';
-const API_AUTHORS_URL = 'http://localhost:8080/api/products/authors';
+const API_URL = 'http://56.228.80.231:8080/api/products';
+const API_CATEGORIES_URL = 'http://56.228.80.231:8080/api/categories';
+const API_AUTHORS_URL = 'http://56.228.80.231:8080/api/products/authors';
 
 let currentPage = 0;
 const pageSize = 8; 
