@@ -6,7 +6,7 @@ spring:
     name: bookshop-api
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/${DB_NAME}
+    url: jdbc:postgresql://bookshop-db.c9k442wayuri.eu-north-1.rds.amazonaws.com:5432/bookshop_db
     username: ${DB_USER}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
@@ -27,3 +27,14 @@ spring:
 
 jwt:
   secret: ${JWT_SECRET}
+
+aws.s3.bucket-name:
+  coursework-bookshop-images
+
+aws.s3.region:
+  eu-north-1
+
+aws:
+  ses:
+    sender-email:
+      senya183381@gmail.com

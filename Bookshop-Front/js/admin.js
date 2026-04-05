@@ -5,7 +5,7 @@ const API_CATEGORIES_URL = 'http://localhost:8080/api/categories';
 let categoriesList = []; 
 let allProducts = [];
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const token = localStorage.getItem('jwt_token');
     if (!token) {
         showNotification("Доступ заборонено!");
@@ -13,6 +13,24 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
+    try {
+        const checkResponse = await fetch('http://localhost:8080/api/users/check-admin', { 
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (checkResponse.status === 403) {
+            alert("Доступ заборонено! Ви не адміністратор.");
+            window.location.href = 'index.html'; 
+            return;
+        } else if (!checkResponse.ok) {
+            throw new Error("Помилка авторизації");
+        }
+    } catch (error) {
+        console.error("Помилка перевірки ролі:", error);
+        window.location.href = 'login.html';
+        return;
+    }
     loadAdminProducts();
     loadAdminOrders();
     loadAdminCategories();
@@ -74,31 +92,50 @@ async function loadAdminProducts() {
 async function createProduct(event) {
     event.preventDefault();
     const token = localStorage.getItem('jwt_token');
-
-    const requestData = {
-        title: document.getElementById('prod-title').value,
-        description: document.getElementById('prod-desc').value,
-        price: parseFloat(document.getElementById('prod-price').value),
-        stockQuantity: parseInt(document.getElementById('prod-stock').value),
-        imageKey: document.getElementById('prod-image').value,
-        categoryId: parseInt(document.getElementById('prod-category').value),
-        author: document.getElementById('prod-author').value.trim()
-    };
+    const submitBtn = document.querySelector('#add-product-form button[type="submit"]');
 
     try {
+        submitBtn.disabled = true;
+        submitBtn.innerText = "Завантаження картинки...";
+        
+        let imageUrl = "";
+        const fileInput = document.getElementById('prod-image-file');
+        
+        // 1. Якщо файл вибрано - вантажимо його в S3
+        if (fileInput.files.length > 0) {
+            imageUrl = await uploadImageToS3(fileInput.files[0]);
+        }
+
+        submitBtn.innerText = "Збереження книги...";
+
+        const requestData = {
+            title: document.getElementById('prod-title').value.trim(),
+            description: document.getElementById('prod-desc').value.trim(),
+            price: parseFloat(document.getElementById('prod-price').value),
+            stockQuantity: parseInt(document.getElementById('prod-stock').value),
+            categoryId: parseInt(document.getElementById('prod-category').value),
+            author: document.getElementById('prod-author').value.trim(),
+            imageKey: imageUrl 
+        };
+
         const response = await fetch(API_PRODUCTS_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify(requestData)
         });
+        
         if (!response.ok) throw new Error("Помилка створення товару");
 
         showNotification("Книгу успішно додано!");
         bootstrap.Modal.getInstance(document.getElementById('addProductModal')).hide();
         document.getElementById('add-product-form').reset();
         loadAdminProducts();
+        
     } catch (error) {
         showNotification(error.message);
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = "Зберегти книгу";
     }
 }
 
@@ -128,17 +165,15 @@ function openEditModal(id) {
     document.getElementById('edit-prod-desc').value = product.description || '';
     document.getElementById('edit-prod-price').value = product.price;
     document.getElementById('edit-prod-stock').value = product.stockQuantity;
-    document.getElementById('edit-prod-image').value = product.imageKey || product.imageUrl || '';
     document.getElementById('edit-prod-author').value = product.author || 'Невідомий автор';
+    
+    document.getElementById('edit-prod-image-url').value = product.imageKey || product.imageUrl || '';
+    document.getElementById('edit-prod-image-file').value = ""; 
 
     const modal = new bootstrap.Modal(document.getElementById('editProductModal'));
 
     const cat = categoriesList.find(c => c.name === product.categoryName);
-    if(cat) {
-        document.getElementById('edit-prod-category').value = cat.id;
-    } else {
-        document.getElementById('edit-prod-category').value = "";
-    }
+    document.getElementById('edit-prod-category').value = cat ? cat.id : "";
 
     modal.show();
 }
@@ -147,30 +182,46 @@ async function editProductSubmit(e) {
     e.preventDefault();
     const token = localStorage.getItem('jwt_token');
     const id = document.getElementById('edit-prod-id').value;
-
-    const requestData = {
-        title: document.getElementById('edit-prod-title').value,
-        description: document.getElementById('edit-prod-desc').value,
-        price: parseFloat(document.getElementById('edit-prod-price').value),
-        stockQuantity: parseInt(document.getElementById('edit-prod-stock').value),
-        imageKey: document.getElementById('edit-prod-image').value,
-        author: document.getElementById('edit-prod-author').value.trim(),
-        categoryId: parseInt(document.getElementById('edit-prod-category').value)
-    };
+    const submitBtn = document.querySelector('#edit-product-form button[type="submit"]');
 
     try {
+        submitBtn.disabled = true;
+        submitBtn.innerText = "Завантаження...";
+
+        let imageUrl = document.getElementById('edit-prod-image-url').value;
+        const fileInput = document.getElementById('edit-prod-image-file');
+
+        if (fileInput.files.length > 0) {
+            imageUrl = await uploadImageToS3(fileInput.files[0]);
+        }
+
+        const requestData = {
+            title: document.getElementById('edit-prod-title').value.trim(),
+            description: document.getElementById('edit-prod-desc').value.trim(),
+            price: parseFloat(document.getElementById('edit-prod-price').value),
+            stockQuantity: parseInt(document.getElementById('edit-prod-stock').value),
+            author: document.getElementById('edit-prod-author').value.trim(),
+            categoryId: parseInt(document.getElementById('edit-prod-category').value),
+            imageKey: imageUrl 
+        };
+
         const response = await fetch(`${API_PRODUCTS_URL}/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify(requestData)
         });
+        
         if (!response.ok) throw new Error("Не вдалося оновити книгу");
 
         showNotification("Книгу оновлено!");
         bootstrap.Modal.getInstance(document.getElementById('editProductModal')).hide();
         loadAdminProducts();
+        
     } catch (error) {
         showNotification(error.message);
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = "Зберегти зміни";
     }
 }
 
@@ -182,6 +233,12 @@ async function loadAdminOrders() {
         const response = await fetch(API_ORDERS_URL, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
+
+        if (response.status === 403) {
+            alert("Доступ заборонено! Ви не адміністратор.");
+            window.location.href = 'index.html';
+            return;
+        }
 
         if (!response.ok) throw new Error('Помилка завантаження замовлень з сервера');
 
@@ -348,4 +405,23 @@ async function deleteCategory(id) {
     } catch (error) {
         alert(error.message);
     }
+}
+
+async function uploadImageToS3(file) {
+    const formData = new FormData();
+    formData.append("file", file);
+    const token = localStorage.getItem('jwt_token');
+
+    const response = await fetch('http://localhost:8080/api/files/upload', {
+        method: 'POST',
+        headers: { 
+            'Authorization': `Bearer ${token}` 
+        },
+        body: formData
+    });
+
+    if (!response.ok) throw new Error("Помилка завантаження картинки на сервер");
+    
+    const data = await response.json();
+    return data.url;
 }

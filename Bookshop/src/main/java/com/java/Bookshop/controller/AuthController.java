@@ -7,6 +7,7 @@ import com.java.Bookshop.DTO.UserResponseDTO;
 import com.java.Bookshop.Entity.User;
 import com.java.Bookshop.repository.UserRepository;
 import com.java.Bookshop.security.JwtService;
+import com.java.Bookshop.service.EmailService;
 import com.java.Bookshop.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ public class AuthController {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
+    private final EmailService emailService;
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
@@ -36,6 +38,10 @@ public class AuthController {
         responseDTO.setName(savedUser.getName());
         responseDTO.setSurname(savedUser.getSurname());
         responseDTO.setEmail(savedUser.getEmail());
+
+        java.util.concurrent.CompletableFuture.runAsync(() -> {
+            emailService.sendWelcomeEmail(savedUser.getEmail(), savedUser.getName());
+        });
 
         return responseDTO;
     }

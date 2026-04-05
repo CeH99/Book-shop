@@ -4,6 +4,8 @@ import com.java.Bookshop.DTO.UserUpdateDTO;
 import com.java.Bookshop.Entity.User;
 import com.java.Bookshop.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -43,5 +45,11 @@ public class UserController {
         Map<String, String> response = new HashMap<>();
         response.put("message", "Профіль успішно оновлено!");
         return response;
+    }
+
+    @GetMapping("/check-admin")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<Void> checkAdminAccess() {
+        return ResponseEntity.ok().build();
     }
 }

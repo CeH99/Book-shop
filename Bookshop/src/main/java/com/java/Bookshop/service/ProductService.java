@@ -23,8 +23,7 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
-
-    private final String MOCK_IMAGE_URL = "https://m.media-amazon.com/images/I/81q77Q39nHL.jpg";
+    private final FileService fileService;
 
     public ProductResponseDTO createProduct(ProductRequestDTO dto) {
         if(productRepository.existsByTitle(dto.getTitle())) {
@@ -84,6 +83,9 @@ public class ProductService {
 
         Category category = categoryRepository.findById(dto.getCategoryId())
                 .orElseThrow(() -> new RuntimeException("Category not found"));
+        if (product.getImageKey() != null && !product.getImageKey().equals(dto.getImageKey())) {
+            fileService.deleteFileFromS3(product.getImageKey());
+        }
 
         product.setTitle(dto.getTitle());
         product.setDescription(dto.getDescription());
@@ -100,6 +102,11 @@ public class ProductService {
     public void deleteProduct(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException("Book with ID " + id + " was not found"));
+
+        if (product.getImageKey() != null) {
+            fileService.deleteFileFromS3(product.getImageKey());
+        }
+
         productRepository.delete(product);
     }
 
@@ -116,7 +123,7 @@ public class ProductService {
                 product.getDescription(),
                 product.getPrice(),
                 product.getStockQuantity(),
-                product.getImageKey() != null ? product.getImageKey() : MOCK_IMAGE_URL,
+                product.getImageKey(),
                 categoryName,
                 product.getAuthor()
         );
