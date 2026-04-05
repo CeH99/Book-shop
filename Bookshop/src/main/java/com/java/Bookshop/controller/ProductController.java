@@ -29,9 +29,18 @@ public class ProductController {
     @GetMapping
     public Page<ProductResponseDTO> getAllProducts(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false, defaultValue = "id,desc") String sort,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) String author
     ) {
-        return productService.getAllProducts(page, size);
+        return productService.getAllProducts(page, size, sort, search, categoryId, author);
+    }
+
+    @GetMapping("/authors")
+    public List<String> getAllAuthors() {
+        return productService.getAllAuthors();
     }
 
     @GetMapping("/{productId}")
@@ -40,6 +49,7 @@ public class ProductController {
     }
 
     @PutMapping("/{productId}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ProductResponseDTO updateProduct(@PathVariable Long productId,
                                             @Valid @RequestBody ProductRequestDTO dto) {
         return productService.updateProduct(productId, dto);
@@ -47,6 +57,7 @@ public class ProductController {
 
     @DeleteMapping("/{productId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public void deleteProduct(@PathVariable Long productId) {
         productService.deleteProduct(productId);
     }

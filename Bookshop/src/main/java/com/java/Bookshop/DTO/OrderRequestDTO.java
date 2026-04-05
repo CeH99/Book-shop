@@ -1,6 +1,7 @@
 package com.java.Bookshop.DTO;
 
 import jakarta.validation.Valid; // ДОБАВИТЬ
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -17,4 +18,7 @@ public class OrderRequestDTO {
     @NotEmpty(message = "cart cant be empty")
     @Valid
     private List<OrderItemRequestDTO> items;
+
+    @NotBlank
+    private String deliveryAddress;
 }

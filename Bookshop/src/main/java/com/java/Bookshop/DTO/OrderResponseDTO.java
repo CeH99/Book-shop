@@ -23,12 +23,19 @@ public class OrderResponseDTO {
 
     private List<OrderItemResponseDTO> listOfItems;
 
-    public OrderResponseDTO(Long id, BigDecimal totalPrice,
-                            LocalDateTime orderDate, Status status, List<OrderItem> items) {
+    private String deliveryAddress;
+
+    public OrderResponseDTO(Long id,
+                            BigDecimal totalPrice,
+                            LocalDateTime orderDate,
+                            Status status,
+                            List<OrderItem> items,
+                            String deliveryAddress) {
         this.id = id;
         this.date = orderDate;
         this.status = status;
         this.totalPrice = totalPrice;
+        this.deliveryAddress = deliveryAddress;
 
         List<OrderItemResponseDTO> itemResponseDTOList = new ArrayList<>();
 

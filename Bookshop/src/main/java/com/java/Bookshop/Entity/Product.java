@@ -20,7 +20,7 @@ public class Product {
     @Column(nullable = false)
     private String title;
 
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @Column(nullable = false)
@@ -31,4 +31,11 @@ public class Product {
 
     @Column(name = "image_key")
     private String imageKey;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    private Category category;
+
+    @Column(nullable = false)
+    private String author;
 }

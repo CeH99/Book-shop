@@ -24,4 +24,8 @@ public class ProductRequestDTO {
 
     private String imageKey;
 
+    private Long categoryId;
+
+    private String author;
+
 }

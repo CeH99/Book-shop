@@ -27,3 +27,21 @@ document.addEventListener('DOMContentLoaded', () => {
         nav.insertBefore(logoutLink, cartLink);
     }
 });
+
+window.showNotification = function(message, isError = false) {
+    Toastify({
+        text: message,
+        duration: 3000, 
+        close: true,
+        gravity: "bottom",
+        position: "right",
+        stopOnFocus: true, 
+        style: {
+            background: isError ? "linear-gradient(to right, #ff5f6d, #ffc371)" : "linear-gradient(to right, #00b09b, #96c93d)",
+            borderRadius: "8px",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+            fontFamily: "Arial, sans-serif",
+            fontSize: "16px"
+        }
+    }).showToast();
+}

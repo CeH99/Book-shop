@@ -42,17 +42,19 @@ public class OrderServiceTest {
 
     @Test
     void createOrder_ShouldReturnOrderResponseDTO() {
-        // Задаем email пользователя, который якобы пришел из токена
+        // Arrange
         String userEmail = "john.doe@example.com";
         Long productId = 2L;
         int quantity = 2;
         BigDecimal productPrice = BigDecimal.valueOf(100.00);
+        String deliveryAddress = "м. Київ, Відділення №1";
 
         List<OrderItemRequestDTO> orderItemRequests = new ArrayList<>();
         orderItemRequests.add(new OrderItemRequestDTO(productId, quantity));
 
-        // DTO теперь принимает только список товаров
-        OrderRequestDTO orderRequestDTO = new OrderRequestDTO(orderItemRequests);
+        OrderRequestDTO orderRequestDTO = new OrderRequestDTO();
+        orderRequestDTO.setItems(orderItemRequests);
+        orderRequestDTO.setDeliveryAddress(deliveryAddress);
 
         User user = User.builder()
                 .id(1L)
@@ -88,33 +90,39 @@ public class OrderServiceTest {
                 .status(Status.PENDING)
                 .items(orderItems)
                 .totalPrice(totalAmount)
+                .deliveryAddress(deliveryAddress)
                 .build();
 
-        // Учим мок искать пользователя по email
         when(userRepository.findByEmail(userEmail)).thenReturn(Optional.of(user));
         when(productRepository.findById(productId)).thenReturn(Optional.of(product));
         when(orderRepository.save(any(Order.class))).thenReturn(savedOrder);
 
-        // Передаем email в метод
+        // Act
         OrderResponseDTO result = orderService.createOrder(orderRequestDTO, userEmail);
 
+        // Assert
         assertNotNull(result);
         assertEquals(totalAmount, result.getTotalPrice());
+        assertEquals(deliveryAddress, result.getDeliveryAddress());
 
         verify(orderRepository).save(any(Order.class));
     }
 
     @Test
     void createOrder_ShouldThrowException_WhenNotEnoughStock() {
+        // Arrange
         String userEmail = "john.doe@example.com";
         Long productId = 2L;
         int requestedQuantity = 100;
         int availableStock = 5;
+        String deliveryAddress = "м. Київ, Відділення №1";
 
         List<OrderItemRequestDTO> orderItemRequests = new ArrayList<>();
         orderItemRequests.add(new OrderItemRequestDTO(productId, requestedQuantity));
 
-        OrderRequestDTO orderRequestDTO = new OrderRequestDTO(orderItemRequests);
+        OrderRequestDTO orderRequestDTO = new OrderRequestDTO();
+        orderRequestDTO.setItems(orderItemRequests);
+        orderRequestDTO.setDeliveryAddress(deliveryAddress);
 
         User user = User.builder().id(1L).email(userEmail).build();
 
@@ -125,12 +133,12 @@ public class OrderServiceTest {
                 .stockQuantity(availableStock)
                 .build();
 
-        // Аналогично меняем на findByEmail
         when(userRepository.findByEmail(userEmail)).thenReturn(Optional.of(user));
         when(productRepository.findById(productId)).thenReturn(Optional.of(product));
 
+        // Act & Assert
         assertThrows(NotEnoughProductQuantityException.class, () -> {
-            orderService.createOrder(orderRequestDTO, userEmail); // Добавили email
+            orderService.createOrder(orderRequestDTO, userEmail);
         });
 
         verify(orderRepository, never()).save(any(Order.class));

@@ -12,6 +12,7 @@ import com.java.Bookshop.repository.ProductRepository;
 import com.java.Bookshop.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -26,6 +27,7 @@ public class OrderService {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
 
+    @Transactional
     public OrderResponseDTO createOrder(OrderRequestDTO dto, String userEmail) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("User was not found"));
@@ -40,9 +42,10 @@ public class OrderService {
 
             if(product.getStockQuantity() >= itemDTO.getQuantity()) {
                 product.setStockQuantity(product.getStockQuantity() - itemDTO.getQuantity());
+                productRepository.save(product);
             }
             else {
-                throw new NotEnoughProductQuantityException("Not enough stock quantity");
+                throw new NotEnoughProductQuantityException("Not enough product quantity of '" + product.getTitle() + "'. Available: " + product.getStockQuantity() + "pcs");
             }
 
             totalPrice = totalPrice.add(product.getPrice().multiply(BigDecimal.valueOf(itemDTO.getQuantity())));
@@ -62,11 +65,12 @@ public class OrderService {
         order.setTotalPrice(totalPrice);
         order.setUser(user);
         order.setItems(items);
+        order.setDeliveryAddress(dto.getDeliveryAddress());
 
         orderRepository.save(order);
 
         return new OrderResponseDTO(order.getId(), order.getTotalPrice(),
-                order.getOrderDate(), order.getStatus(), order.getItems());
+                order.getOrderDate(), order.getStatus(), order.getItems(), order.getDeliveryAddress());
     }
 
     public List<OrderResponseDTO> getMyOrders(String email) {
@@ -80,7 +84,7 @@ public class OrderService {
         orderRepository.findByUserId(userId).forEach(
                 (Order order) -> {
                     responseDTOList.add(new OrderResponseDTO(order.getId(), order.getTotalPrice(),
-                            order.getOrderDate(), order.getStatus(), order.getItems()));
+                            order.getOrderDate(), order.getStatus(), order.getItems(), order.getDeliveryAddress()));
                 }
         );
         return responseDTOList;
@@ -91,7 +95,7 @@ public class OrderService {
         orderRepository.findAll().forEach(
                 (Order order) -> {
                     responseDTOList.add(new OrderResponseDTO(order.getId(), order.getTotalPrice(),
-                            order.getOrderDate(), order.getStatus(), order.getItems()));
+                            order.getOrderDate(), order.getStatus(), order.getItems(), order.getDeliveryAddress()));
                 }
         );
         return responseDTOList;
@@ -105,7 +109,7 @@ public class OrderService {
         orderRepository.save(order);
 
         return new OrderResponseDTO(order.getId(), order.getTotalPrice(),
-                order.getOrderDate(), order.getStatus(), order.getItems());
+                order.getOrderDate(), order.getStatus(), order.getItems(), order.getDeliveryAddress());
     }
 
 }
