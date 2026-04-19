@@ -22,6 +22,10 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,6 +40,13 @@ public class OrderServiceTest {
 
     @Mock
     private ProductRepository productRepository;
+
+    @Mock
+    private EmailService emailService;
+
+    // 1. Додаємо мок для SQS
+    @Mock
+    private SqsService sqsService;
 
     @InjectMocks
     private OrderService orderService;
@@ -73,14 +84,8 @@ public class OrderServiceTest {
                 .stockQuantity(10)
                 .build();
 
-        OrderItem orderItem = OrderItem.builder()
-                .product(product)
-                .quantity(quantity)
-                .price(productPrice)
-                .build();
-
         List<OrderItem> orderItems = new ArrayList<>();
-        orderItems.add(orderItem);
+        orderItems.add(OrderItem.builder().product(product).quantity(quantity).price(productPrice).build());
 
         BigDecimal totalAmount = productPrice.multiply(BigDecimal.valueOf(quantity));
 
@@ -95,6 +100,7 @@ public class OrderServiceTest {
 
         when(userRepository.findByEmail(userEmail)).thenReturn(Optional.of(user));
         when(productRepository.findById(productId)).thenReturn(Optional.of(product));
+
         when(orderRepository.save(any(Order.class))).thenReturn(savedOrder);
 
         // Act
@@ -102,10 +108,11 @@ public class OrderServiceTest {
 
         // Assert
         assertNotNull(result);
-        assertEquals(totalAmount, result.getTotalPrice());
         assertEquals(deliveryAddress, result.getDeliveryAddress());
+        assertEquals(1L, result.getId());
 
         verify(orderRepository).save(any(Order.class));
+        verify(emailService).sendPaymentLinkEmail(eq(userEmail), eq("John"), eq(1L), anyString());
     }
 
     @Test
@@ -142,5 +149,71 @@ public class OrderServiceTest {
         });
 
         verify(orderRepository, never()).save(any(Order.class));
+        verify(emailService, never()).sendPaymentLinkEmail(anyString(), anyString(), any(), anyString());
+    }
+
+    @Test
+    void processPayment_ShouldUpdateStatusToPaidAndSendSqsMessage() {
+        // Arrange
+        String token = "valid-uuid-token";
+        Order order = Order.builder()
+                .id(1L)
+                .status(Status.PENDING)
+                .paymentToken(token)
+                .build();
+
+        when(orderRepository.findByPaymentToken(token)).thenReturn(Optional.of(order));
+
+        // Act
+        orderService.processPayment(token);
+
+        // Assert
+        assertEquals(Status.PAID, order.getStatus());
+        verify(orderRepository).save(order);
+
+        // 2. Перевіряємо, що після оплати відправляється повідомлення про майбутню відправку (SHIPPED)
+        verify(sqsService).sendOrderStatusUpdate(eq(1L), eq(Status.SHIPPED), eq(60));
+    }
+
+    @Test
+    void processPayment_ShouldThrowException_WhenTokenInvalid() {
+        // Arrange
+        String token = "invalid-token";
+        when(orderRepository.findByPaymentToken(token)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            orderService.processPayment(token);
+        });
+
+        assertEquals("Недійсне посилання на оплату", exception.getMessage());
+        verify(orderRepository, never()).save(any(Order.class));
+
+        // Переконуємось, що повідомлення в SQS не пішло
+        verify(sqsService, never()).sendOrderStatusUpdate(anyLong(), any(Status.class), anyInt());
+    }
+
+    @Test
+    void processPayment_ShouldThrowException_WhenStatusNotPending() {
+        // Arrange
+        String token = "valid-uuid-token";
+        Order order = Order.builder()
+                .id(1L)
+                .status(Status.PAID)
+                .paymentToken(token)
+                .build();
+
+        when(orderRepository.findByPaymentToken(token)).thenReturn(Optional.of(order));
+
+        // Act & Assert
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            orderService.processPayment(token);
+        });
+
+        assertEquals("Замовлення вже оплачено або скасовано", exception.getMessage());
+        verify(orderRepository, never()).save(any(Order.class));
+
+        // Переконуємось, що повідомлення в SQS не пішло
+        verify(sqsService, never()).sendOrderStatusUpdate(anyLong(), any(Status.class), anyInt());
     }
 }

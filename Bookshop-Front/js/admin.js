@@ -1,6 +1,6 @@
-const API_PRODUCTS_URL = 'http://56.228.80.231:8080/api/products';
-const API_ORDERS_URL = 'http://56.228.80.231:8080/api/orders';
-const API_CATEGORIES_URL = 'http://56.228.80.231:8080/api/categories';
+const API_PRODUCTS_URL = 'http://localhost:8080/api/products';
+const API_ORDERS_URL = 'http://localhost:8080/api/orders';
+const API_CATEGORIES_URL = 'http://localhost:8080/api/categories';
 
 let categoriesList = []; 
 let allProducts = [];
@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     try {
-        const checkResponse = await fetch('http://56.228.80.231:8080/api/users/check-admin', { 
+        const checkResponse = await fetch('http://localhost:8080/api/users/check-admin', { 
             method: 'GET',
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -254,6 +254,7 @@ async function loadAdminOrders() {
             'PENDING': 'Очікує',
             'PAID': 'Оплачено',
             'SHIPPED': 'Відправлено',
+            'DELIVERED': 'Доставлено',
             'CANCELLED': 'Скасовано'
         };
 
@@ -264,9 +265,16 @@ async function loadAdminOrders() {
                 let itemName = item.title || item.bookTitle || item.name || item.productTitle || 'Невідома книга';
                 return `<div style="font-size: 14px;">${itemName} (x${item.quantity})</div>`;
             }).join('');
+            
+            let badgeClassMap = {
+                'PENDING': 'bg-warning text-dark',
+                'PAID': 'bg-info text-dark',
+                'SHIPPED': 'bg-primary',
+                'DELIVERED': 'bg-success',
+                'CANCELLED': 'bg-danger'
+            };
+            let statusBadgeClass = badgeClassMap[order.status] || 'bg-secondary';
 
-            let statusBadgeClass = order.status === 'PENDING' ? 'bg-warning text-dark' :
-                                    order.status === 'SHIPPED' ? 'bg-success' : 'bg-secondary';
             let statusName = availableStatuses[order.status] || order.status;
             let statusBadge = `<span class="badge ${statusBadgeClass}">${statusName}</span>`;
 

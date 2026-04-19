@@ -37,9 +37,8 @@ public class SecurityConfig {
                                 "/api/auth/**", "/v3/api-docs/**",
                                 "/swagger-ui/**", "/swagger-ui.html"
                             ).permitAll()
-                            .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/categories/**").permitAll()
+                            .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/categories/**", "/api/orders/pay").permitAll()
                             .requestMatchers(HttpMethod.PATCH, "/api/orders/*/status").hasAuthority("ROLE_ADMIN")
-
                         .anyRequest().authenticated()
                 )
                     .sessionManagement(session -> session

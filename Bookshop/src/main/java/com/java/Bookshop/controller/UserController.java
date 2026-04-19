@@ -39,6 +39,8 @@ public class UserController {
 
         user.setName(dto.getName());
         user.setSurname(dto.getSurname());
+        user.setEmail(dto.getEmail());
+        user.setTelephone(dto.getTelephone());
 
         userRepository.save(user);
 

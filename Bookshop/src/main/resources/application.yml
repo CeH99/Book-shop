@@ -5,6 +5,11 @@ spring:
   application:
     name: bookshop-api
 
+  cloud:
+    aws:
+      region:
+        static: eu-north-1
+
   datasource:
     url: jdbc:postgresql://bookshop-db.c9k442wayuri.eu-north-1.rds.amazonaws.com:5432/bookshop_db
     username: ${DB_USER}
@@ -38,3 +43,5 @@ aws:
   ses:
     sender-email:
       senya183381@gmail.com
+  sqs:
+    queue-url: https://sqs.eu-north-1.amazonaws.com/062700375431/order-status-queue

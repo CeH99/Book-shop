@@ -1,4 +1,4 @@
-const ORDERS_API_URL = 'http://56.228.80.231:8080/api/orders';
+const ORDERS_API_URL = 'http://localhost:8080/api/orders';
 
 document.addEventListener('DOMContentLoaded', () => {
     renderCart();

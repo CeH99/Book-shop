@@ -26,6 +26,8 @@ public class OrderService {
     private final OrderItemRepository orderItemRepository;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
+    private final EmailService emailService;
+    private final SqsService sqsService;
 
     @Transactional
     public OrderResponseDTO createOrder(OrderRequestDTO dto, String userEmail) {
@@ -67,7 +69,13 @@ public class OrderService {
         order.setItems(items);
         order.setDeliveryAddress(dto.getDeliveryAddress());
 
-        orderRepository.save(order);
+        String paymentToken = java.util.UUID.randomUUID().toString();
+        order.setPaymentToken(paymentToken);
+
+        order = orderRepository.save(order);
+
+        String paymentUrl = "http://localhost:8080/api/orders/pay?token=" + paymentToken;
+        emailService.sendPaymentLinkEmail(user.getEmail(), user.getName(), order.getId(), paymentUrl);
 
         return new OrderResponseDTO(order.getId(), order.getTotalPrice(),
                 order.getOrderDate(), order.getStatus(), order.getItems(), order.getDeliveryAddress());
@@ -106,6 +114,47 @@ public class OrderService {
                 .orElseThrow(() -> new OrderNotFoundException("Order with this id doesnt exist"));
         order.setStatus(newStatus);
 
+        orderRepository.save(order);
+
+        return new OrderResponseDTO(order.getId(), order.getTotalPrice(),
+                order.getOrderDate(), order.getStatus(), order.getItems(), order.getDeliveryAddress());
+    }
+
+    @Transactional
+    public void processPayment(String token) {
+        Order order = orderRepository.findByPaymentToken(token)
+                .orElseThrow(() -> new RuntimeException("Недійсне посилання на оплату"));
+
+        if (order.getStatus() != Status.PENDING) {
+            throw new RuntimeException("Замовлення вже оплачено або скасовано");
+        }
+
+        order.setStatus(Status.PAID);
+        orderRepository.save(order);
+
+        sqsService.sendOrderStatusUpdate(order.getId(), Status.SHIPPED, 60);
+    }
+
+    @Transactional
+    public OrderResponseDTO cancelOrder(Long orderId, String userEmail) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException("Order wasnt found"));
+
+        if (!order.getUser().getEmail().equals(userEmail)) {
+            throw new RuntimeException("You cannot cancel this order");
+        }
+
+        if (order.getStatus() == Status.SHIPPED || order.getStatus() == Status.DELIVERED || order.getStatus() == Status.CANCELLED) {
+            throw new RuntimeException("This order could not be cancelled.");
+        }
+
+        for (OrderItem item : order.getItems()) {
+            Product product = item.getProduct();
+            product.setStockQuantity(product.getStockQuantity() + item.getQuantity());
+            productRepository.save(product);
+        }
+
+        order.setStatus(Status.CANCELLED);
         orderRepository.save(order);
 
         return new OrderResponseDTO(order.getId(), order.getTotalPrice(),

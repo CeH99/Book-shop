@@ -40,8 +40,13 @@ public class OrderResponseDTO {
         List<OrderItemResponseDTO> itemResponseDTOList = new ArrayList<>();
 
         for(OrderItem orderItem : items) {
-            itemResponseDTOList.add(new OrderItemResponseDTO(orderItem.getProduct().getTitle(),
-                    orderItem.getQuantity(), orderItem.getPrice()));
+            itemResponseDTOList.add(new OrderItemResponseDTO(
+                    orderItem.getProduct().getId(),
+                    orderItem.getProduct().getTitle(),
+                    orderItem.getQuantity(),
+                    orderItem.getPrice(),
+                    orderItem.getProduct().getImageKey()
+            ));
         }
 
         listOfItems = itemResponseDTOList;

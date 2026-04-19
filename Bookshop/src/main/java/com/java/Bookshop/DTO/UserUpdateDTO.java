@@ -6,4 +6,6 @@ import lombok.Data;
 public class UserUpdateDTO {
     private String name;
     private String surname;
+    private String email;
+    private String telephone;
 }

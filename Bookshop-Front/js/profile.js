@@ -1,4 +1,4 @@
-const MY_ORDERS_URL = 'http://56.228.80.231:8080/api/orders/my';
+const MY_ORDERS_URL = 'http://localhost:8080/api/orders/my';
 
 document.addEventListener('DOMContentLoaded', () => {
     loadUserInfo();
@@ -10,7 +10,7 @@ async function loadUserInfo() {
     if (!token) return;
 
     try {
-        const response = await fetch('http://56.228.80.231:8080/api/users/me', {
+        const response = await fetch('http://localhost:8080/api/users/me', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -59,27 +59,58 @@ async function fetchMyOrders() {
         }
 
         const statusMap = {
-            'PENDING': 'Очікує',
+            'PENDING': 'Очікує оплати',
             'PAID': 'Оплачено',
             'SHIPPED': 'Відправлено',
+            'DELIVERED': 'Доставлено',
             'CANCELLED': 'Скасовано'
+        };
+
+        const colorMap = {
+            'PENDING': '#f39c12',
+            'PAID': '#3498db',
+            'SHIPPED': '#9b59b6',
+            'DELIVERED': '#27ae60',
+            'CANCELLED': '#e74c3c'
         };
 
         orders.sort((a, b) => b.id - a.id).forEach(order => {
             const date = new Date(order.date).toLocaleString('uk-UA');
             
-            let itemsHtml = order.listOfItems.map(item => 
-                `<li style="padding: 5px 0; border-bottom: 1px dashed #eee;">
-                    📚 ${item.name || item.title || 'Книга'} — ${item.quantity} шт. х ${item.price} грн
-                 </li>`
-            ).join('');
+            let itemsHtml = order.listOfItems.map(item => {
+                const itemImage = item.imageKey ? item.imageKey : 'https://placehold.co/50x75?text=Книга';
+                const itemUrl = `book.html?id=${item.productId}`;
+
+                return `
+                <li style="display: flex; align-items: center; gap: 15px; padding: 12px 0; border-bottom: 1px dashed #eee;">
+                    <a href="${itemUrl}" style="flex-shrink: 0; text-decoration: none;">
+                        <img src="${itemImage}" alt="cover" style="width: 45px; height: 65px; object-fit: cover; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    </a>
+                    
+                    <div style="flex-grow: 1;">
+                        <a href="${itemUrl}" style="text-decoration: none; color: #222; font-weight: 600; font-size: 15px; transition: 0.2s;" onmouseover="this.style.color='#c91818'" onmouseout="this.style.color='#222'">
+                            ${item.name}
+                        </a>
+                        <div style="color: #888; font-size: 13px; margin-top: 3px;">Кількість: ${item.quantity} шт.</div>
+                    </div>
+
+                    <div style="font-weight: bold; color: #444;">
+                        ${item.price} грн
+                    </div>
+                </li>`;
+            }).join('');
 
             const orderCard = document.createElement('div');
             orderCard.className = 'order-card';
             orderCard.style.cssText = "border: 1px solid #e0e0e0; border-radius: 6px; padding: 15px; margin-bottom: 15px; background: #fafafa;";
             
             let displayStatus = statusMap[order.status] || order.status;
-            let statusColor = order.status === 'PENDING' ? '#f39c12' : order.status === 'SHIPPED' ? '#27ae60' : '#7f8c8d';
+            let statusColor = colorMap[order.status] || '#7f8c8d';
+            let cancelButtonHtml = '';
+
+            if (order.status === 'PENDING' || order.status === 'PAID') {
+                cancelButtonHtml = `<button onclick="cancelOrder(${order.id})" style="margin-top: 15px; padding: 8px 15px; border: 1px solid #e74c3c; background: transparent; color: #e74c3c; border-radius: 4px; cursor: pointer; font-size: 14px; transition: 0.2s;">Скасувати замовлення ❌</button>`;
+            }
 
             orderCard.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">
@@ -88,10 +119,13 @@ async function fetchMyOrders() {
                         <small style="color: #888;">📅 ${date}</small><br>
                         <small style="color: #444; display: inline-block; margin-top: 5px;">📍 Доставка: <strong>${order.deliveryAddress || 'Не вказано'}</strong></small>
                     </div>
-                    <div>
+                    <div style="text-align: right;">
                         <span style="background: ${statusColor}; color: white; padding: 5px 10px; border-radius: 4px; font-size: 14px; font-weight: bold;">
                             ${displayStatus}
                         </span>
+                        <div style="margin-top: 10px;">
+                            ${cancelButtonHtml}
+                        </div>
                     </div>
                 </div>
                 <ul style="list-style: none; padding: 0; margin: 0; color: #555;">
@@ -110,14 +144,14 @@ async function fetchMyOrders() {
     }
 }
 
-let currentUserData = { name: '', surname: '' };
+let currentUserData = { name: '', surname: '', email: '', telephone: '' };
 
 async function loadUserInfo() {
     const token = localStorage.getItem('jwt_token');
     if (!token) return;
 
     try {
-        const response = await fetch('http://56.228.80.231:8080/api/users/me', {
+        const response = await fetch('http://localhost:8080/api/users/me', {
             method: 'GET',
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -126,11 +160,17 @@ async function loadUserInfo() {
 
         const user = await response.json();
         
-        currentUserData.name = user.name;
-        currentUserData.surname = user.surname;
+        // Сохраняем все 4 поля
+        currentUserData = {
+            name: user.name,
+            surname: user.surname,
+            email: user.email,
+            telephone: user.telephone || ''
+        };
 
         document.getElementById('profile-name').innerText = `${user.name} ${user.surname}`;
         document.getElementById('profile-email').innerText = user.email;
+        // Если хочешь выводить телефон под почтой, можно добавить элемент в HTML и заполнять его тут
         
     } catch (e) {
         console.error("Помилка завантаження профілю", e);
@@ -138,8 +178,11 @@ async function loadUserInfo() {
 }
 
 function openEditModal() {
+    // Подставляем данные в форму при открытии
     document.getElementById('edit-name').value = currentUserData.name;
     document.getElementById('edit-surname').value = currentUserData.surname;
+    document.getElementById('edit-email').value = currentUserData.email;
+    document.getElementById('edit-phone').value = currentUserData.telephone;
     
     document.getElementById('editProfileModal').style.display = 'flex';
 }
@@ -149,20 +192,22 @@ function closeEditModal() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    
     const editForm = document.getElementById('edit-profile-form');
     if (editForm) {
         editForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const token = localStorage.getItem('jwt_token');
             
+            // Собираем все 4 поля
             const requestData = {
                 name: document.getElementById('edit-name').value.trim(),
-                surname: document.getElementById('edit-surname').value.trim()
+                surname: document.getElementById('edit-surname').value.trim(),
+                email: document.getElementById('edit-email').value.trim(),
+                telephone: document.getElementById('edit-phone').value.trim()
             };
 
             try {
-                const response = await fetch('http://56.228.80.231:8080/api/users/me', {
+                const response = await fetch('http://localhost:8080/api/users/me', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -173,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (!response.ok) throw new Error('Не вдалося оновити профіль');
 
-                showNotification("Профіль успішно оновлено!");
+                showNotification("Дані успішно оновлено!");
                 closeEditModal();
                 loadUserInfo(); 
                 
@@ -184,3 +229,31 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+
+async function cancelOrder(orderId) {
+    if (!confirm(`Ви дійсно хочете скасувати замовлення #${orderId}?`)) {
+        return;
+    }
+
+    const token = localStorage.getItem('jwt_token');
+    try {
+        const response = await fetch(`http://localhost:8080/api/orders/${orderId}/cancel`, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => null);
+            throw new Error((errorData && errorData.message) ? errorData.message : 'Не вдалося скасувати замовлення');
+        }
+
+        showNotification(`Замовлення #${orderId} успішно скасовано!`);
+        fetchMyOrders(); 
+    } catch (error) {
+        console.error(error);
+        showNotification(error.message, true); 
+    }
+}

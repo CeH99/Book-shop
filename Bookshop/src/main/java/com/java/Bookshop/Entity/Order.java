@@ -40,4 +40,7 @@ public class Order {
 
     @Column(name = "delivery_address", nullable = false)
     private String deliveryAddress;
+
+    @Column(name = "payment_token")
+    private String paymentToken;
 }

@@ -28,7 +28,6 @@ public class UserService {
                 .telephone(dto.getTelephone())
                 .build();
 
-        //!!! Needs to be hashed with spring security
         newUser.setPassword(passwordEncoder.encode(dto.getPassword()));
 
         newUser.setRole(Role.ROLE_USER);

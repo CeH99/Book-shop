@@ -1,0 +1,1 @@
+ALTER TABLE orders ADD COLUMN payment_token VARCHAR(255);

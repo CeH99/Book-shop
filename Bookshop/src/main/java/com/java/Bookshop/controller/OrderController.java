@@ -46,4 +46,26 @@ public class OrderController {
     public List<OrderResponseDTO> getMyOrders(Principal principal) {
         return orderService.getMyOrders(principal.getName());
     }
+
+    @GetMapping("/pay")
+    public String payOrder(@RequestParam String token) {
+        try {
+            orderService.processPayment(token);
+            return "<html><body style='font-family: Arial, sans-serif; text-align: center; padding-top: 50px;'>" +
+                    "<h2 style='color: #27ae60;'>Оплата пройшла успішно! 🎉</h2>" +
+                    "<p>Ваше замовлення оплачено і готується до відправки.</p>" +
+                    "<a href='http://127.0.0.1:5500/index.html' style='display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: #3498db; color: white; text-decoration: none; border-radius: 5px;'>Повернутися в магазин</a>" +
+                    "</body></html>";
+        } catch (Exception e) {
+            return "<html><body style='font-family: Arial, sans-serif; text-align: center; padding-top: 50px;'>" +
+                    "<h2 style='color: #e74c3c;'>Помилка оплати ❌</h2>" +
+                    "<p>" + e.getMessage() + "</p>" +
+                    "</body></html>";
+        }
+    }
+
+    @PatchMapping("/{orderId}/cancel")
+    public OrderResponseDTO cancelOrder(@PathVariable Long orderId, Principal principal) {
+        return orderService.cancelOrder(orderId, principal.getName());
+    }
 }
