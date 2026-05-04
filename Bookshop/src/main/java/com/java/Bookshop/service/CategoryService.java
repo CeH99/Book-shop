@@ -1,6 +1,7 @@
 package com.java.Bookshop.service;
 
 import com.java.Bookshop.Entity.Category;
+import com.java.Bookshop.exception.CategoryNotFoundException;
 import com.java.Bookshop.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,14 +23,16 @@ public class CategoryService {
 
     public Category updateCategory(Long id, Category categoryDetails) {
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new CategoryNotFoundException("Category with id " + id + " not found"));
+
         category.setName(categoryDetails.getName());
         return categoryRepository.save(category);
     }
 
     public void deleteCategory(Long id) {
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new CategoryNotFoundException("Category with id " + id + " not found"));
+
         categoryRepository.delete(category);
     }
 }

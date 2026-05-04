@@ -28,4 +28,5 @@ public class ProductRequestDTO {
 
     private String author;
 
+    private Integer discount;
 }

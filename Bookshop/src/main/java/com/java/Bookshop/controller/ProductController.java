@@ -7,9 +7,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -33,9 +35,12 @@ public class ProductController {
             @RequestParam(required = false, defaultValue = "id,desc") String sort,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Long categoryId,
-            @RequestParam(required = false) String author
+            @RequestParam(required = false) String author,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(required = false) List<Long> ids
     ) {
-        return productService.getAllProducts(page, size, sort, search, categoryId, author);
+        return productService.getAllProducts(page, size, sort, search, categoryId, author, minPrice, maxPrice, ids);
     }
 
     @GetMapping("/authors")
@@ -62,4 +67,21 @@ public class ProductController {
         productService.deleteProduct(productId);
     }
 
+
+    @GetMapping("/banner")
+    public ResponseEntity<ProductResponseDTO> getBanner() {
+        ProductResponseDTO banner = productService.getBanner();
+        if (banner != null) {
+            return ResponseEntity.ok(banner);
+        } else {
+            return ResponseEntity.noContent().build();
+        }
+    }
+
+    @PutMapping("/banner/{productId}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<Void> setBanner(@PathVariable Long productId) {
+        productService.setBanner(productId);
+        return ResponseEntity.ok().build();
+    }
 }

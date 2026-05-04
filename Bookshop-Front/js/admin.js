@@ -20,55 +20,51 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         if (checkResponse.status === 403) {
-            alert("Доступ заборонено! Ви не адміністратор.");
+            alert("Доступ заборонено! Ви не є адміністратором.");
             window.location.href = 'index.html'; 
             return;
         } else if (!checkResponse.ok) {
             throw new Error("Помилка авторизації");
         }
     } catch (error) {
-        console.error("Помилка перевірки ролі:", error);
+        console.error("Role check error:", error);
         window.location.href = 'login.html';
         return;
     }
+    
     loadAdminProducts();
     loadAdminOrders();
     loadAdminCategories();
+    loadBannerOptions();
+    loadAdminReviews();
 
     const addForm = document.getElementById('add-product-form');
-    if (addForm) {
-        addForm.addEventListener('submit', createProduct);
-    }
+    if (addForm) addForm.addEventListener('submit', createProduct);
 
     const editForm = document.getElementById('edit-product-form');
-    if (editForm) {
-        editForm.addEventListener('submit', editProductSubmit);
-    }
+    if (editForm) editForm.addEventListener('submit', editProductSubmit);
 
     const addCatForm = document.getElementById('add-category-form');
-    if (addCatForm) {
-        addCatForm.addEventListener('submit', createCategorySubmit);
-    }
+    if (addCatForm) addCatForm.addEventListener('submit', createCategorySubmit);
 });
 
-
+// Load books for admin table
 async function loadAdminProducts() {
     const tbody = document.getElementById('admin-products-table');
     try {
         const response = await fetch(API_PRODUCTS_URL);
         const data = await response.json();
-        const products = data.content ? data.content : data;
+        const products = data.content || data;
 
         allProducts = products;
         tbody.innerHTML = '';
         
         products.sort((a, b) => b.id - a.id).forEach(p => {
-            const imageSrc = p.imageUrl ? p.imageUrl : p.imageKey ? p.imageKey : 'https://placehold.co/50x75?text=Img';
-            
+            const imageSrc = p.imageUrl || p.imageKey || 'https://placehold.co/50x75?text=Img';
             tbody.innerHTML += `
                 <tr>
                     <td>${p.id}</td>
-                    <td><img src="${imageSrc}" alt="cover" style="width: 50px; border-radius: 4px;"></td>
+                    <td><img src="${imageSrc}" alt="обкладинка" style="width: 50px; border-radius: 4px;"></td>
                     <td class="fw-bold">${p.title}</td>
                     <td>${p.price} грн</td>
                     <td class="text-center">
@@ -84,11 +80,12 @@ async function loadAdminProducts() {
             `;
         });
     } catch (error) {
-        console.error("Помилка завантаження книг:", error);
+        console.error("Books load error:", error);
         tbody.innerHTML = '<tr><td colspan="6" class="text-danger text-center">Помилка завантаження книг</td></tr>';
     }
 }
 
+// Create new product
 async function createProduct(event) {
     event.preventDefault();
     const token = localStorage.getItem('jwt_token');
@@ -96,17 +93,16 @@ async function createProduct(event) {
 
     try {
         submitBtn.disabled = true;
-        submitBtn.innerText = "Завантаження картинки...";
+        submitBtn.innerText = "Завантаження зображення...";
         
         let imageUrl = "";
         const fileInput = document.getElementById('prod-image-file');
-        
-        // 1. Якщо файл вибрано - вантажимо його в S3
         if (fileInput.files.length > 0) {
             imageUrl = await uploadImageToS3(fileInput.files[0]);
         }
 
         submitBtn.innerText = "Збереження книги...";
+        const discountValue = document.getElementById('prod-discount').value;
 
         const requestData = {
             title: document.getElementById('prod-title').value.trim(),
@@ -115,7 +111,8 @@ async function createProduct(event) {
             stockQuantity: parseInt(document.getElementById('prod-stock').value),
             categoryId: parseInt(document.getElementById('prod-category').value),
             author: document.getElementById('prod-author').value.trim(),
-            imageKey: imageUrl 
+            imageKey: imageUrl,
+            discount: discountValue ? parseInt(discountValue) : null 
         };
 
         const response = await fetch(API_PRODUCTS_URL, {
@@ -124,7 +121,7 @@ async function createProduct(event) {
             body: JSON.stringify(requestData)
         });
         
-        if (!response.ok) throw new Error("Помилка створення товару");
+        if (!response.ok) throw new Error("Не вдалося створити товар");
 
         showNotification("Книгу успішно додано!");
         bootstrap.Modal.getInstance(document.getElementById('addProductModal')).hide();
@@ -139,6 +136,7 @@ async function createProduct(event) {
     }
 }
 
+// Delete product
 async function deleteProduct(id) {
     const token = localStorage.getItem('jwt_token');
     if (!confirm(`Ви впевнені, що хочете видалити книгу з ID ${id}?`)) return;
@@ -148,7 +146,7 @@ async function deleteProduct(id) {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}` }
         });
-        if (!response.ok) throw new Error("Неможливо видалити (можливо, книга є в замовленнях клієнтів)");
+        if (!response.ok) throw new Error("Неможливо видалити (книга може бути в замовленнях клієнтів)");
         showNotification("Книгу видалено!");
         loadAdminProducts();
     } catch (error) {
@@ -156,6 +154,7 @@ async function deleteProduct(id) {
     }
 }
 
+// Open edit modal with product data
 function openEditModal(id) {
     const product = allProducts.find(p => p.id === id);
     if (!product) return;
@@ -165,19 +164,20 @@ function openEditModal(id) {
     document.getElementById('edit-prod-desc').value = product.description || '';
     document.getElementById('edit-prod-price').value = product.price;
     document.getElementById('edit-prod-stock').value = product.stockQuantity;
-    document.getElementById('edit-prod-author').value = product.author || 'Невідомий автор';
+    document.getElementById('edit-prod-author').value = product.author || 'Невідомо';
+    document.getElementById('edit-prod-discount').value = product.discount || '';
     
     document.getElementById('edit-prod-image-url').value = product.imageKey || product.imageUrl || '';
     document.getElementById('edit-prod-image-file').value = ""; 
 
     const modal = new bootstrap.Modal(document.getElementById('editProductModal'));
-
     const cat = categoriesList.find(c => c.name === product.categoryName);
     document.getElementById('edit-prod-category').value = cat ? cat.id : "";
 
     modal.show();
 }
 
+// Submit product edits
 async function editProductSubmit(e) {
     e.preventDefault();
     const token = localStorage.getItem('jwt_token');
@@ -186,7 +186,7 @@ async function editProductSubmit(e) {
 
     try {
         submitBtn.disabled = true;
-        submitBtn.innerText = "Завантаження...";
+        submitBtn.innerText = "Збереження...";
 
         let imageUrl = document.getElementById('edit-prod-image-url').value;
         const fileInput = document.getElementById('edit-prod-image-file');
@@ -195,6 +195,8 @@ async function editProductSubmit(e) {
             imageUrl = await uploadImageToS3(fileInput.files[0]);
         }
 
+        const discountValue = document.getElementById('edit-prod-discount').value;
+
         const requestData = {
             title: document.getElementById('edit-prod-title').value.trim(),
             description: document.getElementById('edit-prod-desc').value.trim(),
@@ -202,7 +204,8 @@ async function editProductSubmit(e) {
             stockQuantity: parseInt(document.getElementById('edit-prod-stock').value),
             author: document.getElementById('edit-prod-author').value.trim(),
             categoryId: parseInt(document.getElementById('edit-prod-category').value),
-            imageKey: imageUrl 
+            imageKey: imageUrl,
+            discount: discountValue ? parseInt(discountValue) : null
         };
 
         const response = await fetch(`${API_PRODUCTS_URL}/${id}`, {
@@ -225,6 +228,7 @@ async function editProductSubmit(e) {
     }
 }
 
+// Load all customer orders
 async function loadAdminOrders() {
     const tbody = document.getElementById('admin-orders-table');
     const token = localStorage.getItem('jwt_token');
@@ -235,18 +239,18 @@ async function loadAdminOrders() {
         });
 
         if (response.status === 403) {
-            alert("Доступ заборонено! Ви не адміністратор.");
+            alert("Доступ заборонено! Ви не є адміністратором.");
             window.location.href = 'index.html';
             return;
         }
 
-        if (!response.ok) throw new Error('Помилка завантаження замовлень з сервера');
+        if (!response.ok) throw new Error('Не вдалося завантажити замовлення');
 
         const orders = await response.json();
         tbody.innerHTML = '';
 
         if (orders.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center">Замовлень поки немає</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center">Замовлень ще немає</td></tr>';
             return;
         }
 
@@ -260,11 +264,9 @@ async function loadAdminOrders() {
 
         orders.sort((a, b) => b.id - a.id).forEach(order => {
             const date = new Date(order.date).toLocaleString('uk-UA');
-            
-            let itemsHtml = order.listOfItems.map(item => {
-                let itemName = item.title || item.bookTitle || item.name || item.productTitle || 'Невідома книга';
-                return `<div style="font-size: 14px;">${itemName} (x${item.quantity})</div>`;
-            }).join('');
+            let itemsHtml = order.listOfItems.map(item => `
+                <div style="font-size: 14px;">${item.title || item.bookTitle || 'Невідома книга'} (x${item.quantity})</div>
+            `).join('');
             
             let badgeClassMap = {
                 'PENDING': 'bg-warning text-dark',
@@ -274,14 +276,12 @@ async function loadAdminOrders() {
                 'CANCELLED': 'bg-danger'
             };
             let statusBadgeClass = badgeClassMap[order.status] || 'bg-secondary';
-
             let statusName = availableStatuses[order.status] || order.status;
             let statusBadge = `<span class="badge ${statusBadgeClass}">${statusName}</span>`;
 
-            let selectOptions = Object.keys(availableStatuses).map(statusKey => {
-                let isSelected = order.status === statusKey ? 'selected' : '';
-                return `<option value="${statusKey}" ${isSelected}>${availableStatuses[statusKey]}</option>`;
-            }).join('');
+            let selectOptions = Object.keys(availableStatuses).map(statusKey => `
+                <option value="${statusKey}" ${order.status === statusKey ? 'selected' : ''}>${availableStatuses[statusKey]}</option>
+            `).join('');
 
             let actionHtml = `
                 <div class="d-flex align-items-center">
@@ -305,11 +305,12 @@ async function loadAdminOrders() {
         });
 
     } catch (error) {
-        console.error("Помилка замовлень:", error);
+        console.error("Orders load error:", error);
         tbody.innerHTML = '<tr><td colspan="6" class="text-danger text-center">Не вдалося завантажити замовлення</td></tr>';
     }
 }
 
+/*"Update order status"*/
 async function changeOrderStatus(orderId) {
     const token = localStorage.getItem('jwt_token');
     const newStatus = document.getElementById(`status-select-${orderId}`).value;
@@ -322,7 +323,7 @@ async function changeOrderStatus(orderId) {
 
         if (!response.ok) throw new Error('Не вдалося оновити статус');
 
-        showNotification(`Статус замовлення #${orderId} успішно змінено!`);
+        showNotification(`Статус замовлення #${orderId} оновлено!`);
         loadAdminOrders();
 
     } catch (error) {
@@ -330,6 +331,7 @@ async function changeOrderStatus(orderId) {
     }
 }
 
+/*"Load categories for selects and table"*/
 async function loadAdminCategories() {
     try {
         const response = await fetch(API_CATEGORIES_URL);
@@ -347,7 +349,7 @@ async function loadAdminCategories() {
         if (tbody) {
             tbody.innerHTML = '';
             if (categoriesList.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="3" class="text-center">Жанрів поки немає</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="3" class="text-center">Жанрів ще немає</td></tr>';
                 return;
             }
             
@@ -364,10 +366,11 @@ async function loadAdminCategories() {
             });
         }
     } catch (e) {
-        console.error("Помилка завантаження категорій", e);
+        console.error("Categories load error:", e);
     }
 }
 
+/*"Create new category"*/
 async function createCategorySubmit(e) {
     e.preventDefault();
     const token = localStorage.getItem('jwt_token');
@@ -376,29 +379,25 @@ async function createCategorySubmit(e) {
     try {
         const response = await fetch(API_CATEGORIES_URL, {
             method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}` 
-            },
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify({ name: catName })
         });
 
-        if (!response.ok) throw new Error("Помилка створення жанру. Можливо, такий вже існує.");
+        if (!response.ok) throw new Error("Не вдалося створити категорію. Можливо, вона вже існує.");
 
-        alert("Жанр успішно додано!"); 
+        alert("Жанр додано!"); 
         bootstrap.Modal.getInstance(document.getElementById('addCategoryModal')).hide();
         document.getElementById('add-category-form').reset();
-        
         loadAdminCategories(); 
     } catch (error) {
         alert(error.message);
     }
 }
 
+/*"Delete category"*/
 async function deleteCategory(id) {
     const token = localStorage.getItem('jwt_token');
-    
-    if (!confirm(`Ви впевнені, що хочете видалити жанр з ID ${id}? (Книги з цим жанром не зникнуть, але залишаться без жанру)`)) return;
+    if (!confirm(`Ви впевнені, що хочете видалити жанр з ID ${id}?`)) return;
 
     try {
         const response = await fetch(`${API_CATEGORIES_URL}/${id}`, {
@@ -406,15 +405,15 @@ async function deleteCategory(id) {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         
-        if (!response.ok) throw new Error("Неможливо видалити жанр.");
-        
-        alert("Жанр успішно видалено!");
+        if (!response.ok) throw new Error("Не вдалося видалити жанр.");
+        alert("Жанр видалено!");
         loadAdminCategories();
     } catch (error) {
         alert(error.message);
     }
 }
 
+/*"Upload image to server"*/
 async function uploadImageToS3(file) {
     const formData = new FormData();
     formData.append("file", file);
@@ -422,14 +421,118 @@ async function uploadImageToS3(file) {
 
     const response = await fetch('http://localhost:8080/api/files/upload', {
         method: 'POST',
-        headers: { 
-            'Authorization': `Bearer ${token}` 
-        },
+        headers: { 'Authorization': `Bearer ${token}` },
         body: formData
     });
 
-    if (!response.ok) throw new Error("Помилка завантаження картинки на сервер");
-    
+    if (!response.ok) throw new Error("Не вдалося завантажити зображення");
     const data = await response.json();
     return data.url;
+}
+
+/*"Load books for banner selection"*/
+async function loadBannerOptions() {
+    const select = document.getElementById('banner-select');
+    try {
+        const response = await fetch('http://localhost:8080/api/products?size=100');
+        const data = await response.json();
+        const products = data.content || data;
+        
+        select.innerHTML = '<option value="">-- Оберіть книгу --</option>';
+        products.forEach(p => {
+            select.innerHTML += `<option value="${p.id}">${p.title} (${p.author})</option>`;
+        });
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+/*"Save selected book as banner"*/
+async function saveBanner() {
+    const bookId = document.getElementById('banner-select').value;
+    if(!bookId) return alert("Оберіть книгу!");
+
+    const token = localStorage.getItem('jwt_token');
+    try {
+        const res = await fetch(`http://localhost:8080/api/products/banner/${bookId}`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if(res.ok) {
+            showNotification("Банер оновлено!");
+        } else {
+            showNotification("Оновлення не вдалося", true);
+        }
+    } catch (e) {
+        showNotification("Помилка сервера", true);
+    }
+}
+
+/*"Load all reviews for moderation"*/
+async function loadAdminReviews() {
+    const tbody = document.getElementById('admin-reviews-table');
+    if (!tbody) return;
+    
+    const token = localStorage.getItem('jwt_token');
+
+    try {
+        const response = await fetch('http://localhost:8080/api/reviews', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!response.ok) throw new Error('Не вдалося завантажити відгуки');
+
+        const reviews = await response.json();
+        tbody.innerHTML = '';
+
+        if (reviews.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center">Відгуків ще немає</td></tr>';
+            return;
+        }
+
+        reviews.forEach(review => {
+            const dateStr = review.createdAt ? new Date(review.createdAt).toLocaleString('uk-UA') : 'Невідомо';
+            let stars = '';
+            for (let i = 0; i < review.rating; i++) stars += '⭐';
+
+            tbody.innerHTML += `
+                <tr>
+                    <td><strong>#${review.id}</strong></td>
+                    <td style="font-size: 14px; color: #666;">${dateStr}</td>
+                    <td class="fw-bold">${review.userName}</td>
+                    <td>${stars}</td>
+                    <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${review.text}">
+                        ${review.text}
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteAdminReview(${review.id})" title="Видалити">🗑️</button>
+                    </td>
+                </tr>
+            `;
+        });
+
+    } catch (error) {
+        console.error("Reviews load error:", error);
+        tbody.innerHTML = '<tr><td colspan="6" class="text-danger text-center">Не вдалося завантажити відгуки</td></tr>';
+    }
+}
+
+/*"Delete review"*/
+async function deleteAdminReview(id) {
+    const token = localStorage.getItem('jwt_token');
+    if (!confirm(`Ви впевнені, що хочете остаточно видалити відгук #${id}?`)) return;
+
+    try {
+        const response = await fetch(`http://localhost:8080/api/reviews/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!response.ok) throw new Error("Видалення не вдалося");
+        
+        showNotification("Відгук видалено!");
+        loadAdminReviews();
+    } catch (error) {
+        showNotification(error.message, true);
+    }
 }

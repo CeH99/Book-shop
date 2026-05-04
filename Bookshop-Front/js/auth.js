@@ -2,12 +2,12 @@ const AUTH_URL = 'http://localhost:8080/api/auth/login';
 
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('login-form');
-    
     if (loginForm) {
         loginForm.addEventListener('submit', handleLogin);
     }
 });
 
+// Handle user login
 async function handleLogin(event) {
     event.preventDefault();
 
@@ -18,34 +18,28 @@ async function handleLogin(event) {
     try {
         const response = await fetch(AUTH_URL, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                email: email,
-                password: password
-            })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
         });
 
         if (!response.ok) {
-            throw new Error('Невірні дані');
+            throw new Error('Невірні дані для входу');
         }
 
         const data = await response.json();
-
         const jwtToken = data.token || data.jwt || data.accessToken; 
         
         if (jwtToken) {
             localStorage.setItem('jwt_token', jwtToken);
             window.location.href = 'index.html';
         } else {
-            console.error('Токен не знайдено у відповіді:', data);
+            console.error('Token not found in response:', data);
             errorMsg.style.display = 'block';
             errorMsg.innerText = 'Помилка сервера: токен не отримано';
         }
 
     } catch (error) {
-        console.error('Помилка входу:', error);
+        console.error('Login error:', error);
         errorMsg.style.display = 'block';
         errorMsg.innerText = 'Невірний email або пароль!';
     }
@@ -61,6 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// Handle user registration
 async function handleRegister(event) {
     event.preventDefault(); 
 
@@ -76,52 +71,39 @@ async function handleRegister(event) {
 
     errorMsg.style.display = 'none';
     submitBtn.disabled = true;
-    submitBtn.innerText = 'Зачекайте...';
+    submitBtn.innerText = 'Будь ласка, зачекайте...';
 
-    const requestData = {
-        name: name,
-        surname: surname,
-        email: email,
-        telephone: telephone,
-        password: password
-    };
+    const requestData = { name, surname, email, telephone, password };
 
     try {
         const response = await fetch(REGISTER_URL, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(requestData)
         });
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => null);
-            throw new Error((errorData && errorData.message) ? errorData.message : 'Помилка реєстрації');
+            throw new Error((errorData && errorData.message) ? errorData.message : 'Реєстрація не вдалася');
         }
 
         const data = await response.json();
-
         successMsg.style.display = 'block';
 
         const jwtToken = data.token || data.jwt || data.accessToken;
         
         if (jwtToken) {
             localStorage.setItem('jwt_token', jwtToken);
-            setTimeout(() => {
-                window.location.href = 'index.html';
-            }, 1000);
+            setTimeout(() => { window.location.href = 'index.html'; }, 1000);
         } else {
-            setTimeout(() => {
-                window.location.href = 'login.html';
-            }, 1500);
+            setTimeout(() => { window.location.href = 'login.html'; }, 1500);
         }
 
     } catch (error) {
-        console.error('Помилка:', error);
+        console.error('Registration error:', error);
         errorMsg.style.display = 'block';
         errorMsg.innerText = error.message === 'Failed to fetch' 
-            ? 'Немає зв\'язку з сервером' 
+            ? 'Помилка з\'єднання з сервером' 
             : 'Помилка: ' + error.message;
         
         submitBtn.disabled = false;

@@ -4,8 +4,7 @@ import com.java.Bookshop.DTO.OrderItemRequestDTO;
 import com.java.Bookshop.DTO.OrderRequestDTO;
 import com.java.Bookshop.DTO.OrderResponseDTO;
 import com.java.Bookshop.Entity.*;
-import com.java.Bookshop.exception.NotEnoughProductQuantityException;
-import com.java.Bookshop.exception.OrderNotFoundException;
+import com.java.Bookshop.exception.*;
 import com.java.Bookshop.repository.OrderItemRepository;
 import com.java.Bookshop.repository.OrderRepository;
 import com.java.Bookshop.repository.ProductRepository;
@@ -32,7 +31,7 @@ public class OrderService {
     @Transactional
     public OrderResponseDTO createOrder(OrderRequestDTO dto, String userEmail) {
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("User was not found"));
+                .orElseThrow(() -> new UserNotFoundException("User was not found"));
 
         Order order = new Order();
         BigDecimal totalPrice = BigDecimal.ZERO;
@@ -40,7 +39,7 @@ public class OrderService {
 
         for(OrderItemRequestDTO itemDTO : dto.getItems()) {
             Product product = productRepository.findById(itemDTO.getProductId())
-                    .orElseThrow(() -> new RuntimeException("Product was not found"));
+                    .orElseThrow(() -> new ProductNotFoundException("Product with ID " + itemDTO.getProductId() + " was not found"));
 
             if(product.getStockQuantity() >= itemDTO.getQuantity()) {
                 product.setStockQuantity(product.getStockQuantity() - itemDTO.getQuantity());
@@ -83,7 +82,7 @@ public class OrderService {
 
     public List<OrderResponseDTO> getMyOrders(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
         return getUserOrders(user.getId());
     }
 
@@ -123,10 +122,10 @@ public class OrderService {
     @Transactional
     public void processPayment(String token) {
         Order order = orderRepository.findByPaymentToken(token)
-                .orElseThrow(() -> new RuntimeException("Недійсне посилання на оплату"));
+                .orElseThrow(() -> new InvalidPaymentTokenException("Недійсне посилання на оплату"));
 
         if (order.getStatus() != Status.PENDING) {
-            throw new RuntimeException("Замовлення вже оплачено або скасовано");
+            throw new InvalidOrderStatusException("Замовлення вже оплачено або скасовано");
         }
 
         order.setStatus(Status.PAID);
@@ -141,11 +140,11 @@ public class OrderService {
                 .orElseThrow(() -> new OrderNotFoundException("Order wasnt found"));
 
         if (!order.getUser().getEmail().equals(userEmail)) {
-            throw new RuntimeException("You cannot cancel this order");
+            throw new UnauthorizedOrderAccessException("You cannot cancel this order");
         }
 
         if (order.getStatus() == Status.SHIPPED || order.getStatus() == Status.DELIVERED || order.getStatus() == Status.CANCELLED) {
-            throw new RuntimeException("This order could not be cancelled.");
+            throw new InvalidOrderStatusException("This order could not be cancelled.");
         }
 
         for (OrderItem item : order.getItems()) {
@@ -160,5 +159,4 @@ public class OrderService {
         return new OrderResponseDTO(order.getId(), order.getTotalPrice(),
                 order.getOrderDate(), order.getStatus(), order.getItems(), order.getDeliveryAddress());
     }
-
 }

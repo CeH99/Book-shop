@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import org.springframework.format.annotation.NumberFormat;
 
 @Data
 public class UserRegistrationDTO {
@@ -19,6 +20,7 @@ public class UserRegistrationDTO {
     private String email;
 
     @Size(max = 20, message = "Telephone is to long")
+    @NumberFormat(pattern = "+380#########")
     private String telephone;
 
     @NotBlank(message = "Password is required")

@@ -3,6 +3,7 @@ package com.java.Bookshop.service;
 import com.java.Bookshop.DTO.OrderStatusMessage;
 import com.java.Bookshop.Entity.Order;
 import com.java.Bookshop.Entity.Status;
+import com.java.Bookshop.exception.OrderNotFoundException;
 import com.java.Bookshop.repository.OrderRepository;
 import io.awspring.cloud.sqs.annotation.SqsListener;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +21,7 @@ public class SqsOrderListener {
     @Transactional
     public void handleOrderStatusUpdate(OrderStatusMessage message) {
         Order order = orderRepository.findById(message.getOrderId())
-                .orElseThrow(() -> new RuntimeException("Order wasnt found"));
+                .orElseThrow(() -> new OrderNotFoundException("Order with ID " + message.getOrderId() + " wasn't found"));
 
         System.out.println("Received a message change status of order#" + order.getId() + " to " + message.getTargetStatus());
 

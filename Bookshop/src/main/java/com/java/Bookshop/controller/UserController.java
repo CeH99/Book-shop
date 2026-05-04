@@ -1,15 +1,14 @@
 package com.java.Bookshop.controller;
 
 import com.java.Bookshop.DTO.UserUpdateDTO;
-import com.java.Bookshop.Entity.User;
-import com.java.Bookshop.repository.UserRepository;
+import com.java.Bookshop.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -17,36 +16,16 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     @GetMapping("/me")
     public Map<String, String> getCurrentUser(Principal principal) {
-        User user = userRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        Map<String, String> userData = new HashMap<>();
-        userData.put("name", user.getName());
-        userData.put("surname", user.getSurname());
-        userData.put("email", user.getEmail());
-
-        return userData;
+        return userService.getCurrentUser(principal.getName());
     }
 
     @PutMapping("/me")
-    public Map<String, String> updateCurrentUser(Principal principal, @RequestBody UserUpdateDTO dto) {
-        User user = userRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        user.setName(dto.getName());
-        user.setSurname(dto.getSurname());
-        user.setEmail(dto.getEmail());
-        user.setTelephone(dto.getTelephone());
-
-        userRepository.save(user);
-
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Профіль успішно оновлено!");
-        return response;
+    public Map<String, String> updateCurrentUser(Principal principal, @Valid @RequestBody UserUpdateDTO dto) {
+        return userService.updateCurrentUser(principal.getName(), dto);
     }
 
     @GetMapping("/check-admin")

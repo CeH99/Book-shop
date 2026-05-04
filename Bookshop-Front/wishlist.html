@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Список бажань - Онлайн-Книгарня</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .wishlist-empty {
+            text-align: center;
+            padding: 80px 0;
+        }
+        .wishlist-empty-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            color: #ccc;
+        }
+        .btn-remove-wishlist {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #eee;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            color: #c91818;
+            z-index: 10;
+        }
+        .btn-remove-wishlist:hover {
+            background: #c91818;
+            color: white;
+            border-color: #c91818;
+            transform: scale(1.1);
+        }
+        .book-card {
+            position: relative; 
+        }
+    </style>
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-container">
+            <div class="logo">
+                <a href="index.html">Книгарня<span>.</span></a>
+            </div>
+            <nav class="main-nav">
+                <a href="index.html">Каталог</a>
+                <a href="cart.html" class="cart-link">Кошик (<span id="cart-count">0</span>)</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <h1 class="section-title">Мій список бажань ❤️</h1>
+        
+        <div class="products-grid" id="wishlist-grid">
+            <p style="text-align: center; grid-column: 1 / -1;">Завантаження...</p>
+        </div>
+    </main>
+
+    <footer style="background-color: #1a1a1a; color: #a0a0a0; padding: 50px 20px; margin-top: 80px; text-align: center;">
+        <div style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+            <div style="font-size: 26px; font-weight: bold; color: #fff;">Книгарня<span style="color: #c91818;">.</span></div>
+            <div><p style="margin: 0; font-size: 16px;">© 2026 Всі права захищено.</p></div>
+        </div>
+    </footer>
+
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="js/header.js"></script>
+    <script src="js/wishlist.js"></script> 
+</body>
+</html>

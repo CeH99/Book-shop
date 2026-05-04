@@ -4,6 +4,8 @@ import com.java.Bookshop.DTO.ProductRequestDTO;
 import com.java.Bookshop.DTO.ProductResponseDTO;
 import com.java.Bookshop.Entity.Category;
 import com.java.Bookshop.Entity.Product;
+import com.java.Bookshop.Entity.Review;
+import com.java.Bookshop.exception.CategoryNotFoundException;
 import com.java.Bookshop.exception.ProductAlreadyExistsException;
 import com.java.Bookshop.exception.ProductNotFoundException;
 import com.java.Bookshop.repository.CategoryRepository;
@@ -15,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -31,7 +34,7 @@ public class ProductService {
         }
 
         Category category = categoryRepository.findById(dto.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new CategoryNotFoundException("Category with ID " + dto.getCategoryId() + " not found"));
 
         Product newProduct = Product.builder()
                 .description(dto.getDescription())
@@ -41,13 +44,16 @@ public class ProductService {
                 .imageKey(dto.getImageKey())
                 .category(category)
                 .author(dto.getAuthor())
+                .discount(dto.getDiscount())
                 .build();
 
         Product savedProduct = productRepository.save(newProduct);
         return mapToDTO(savedProduct);
     }
 
-    public Page<ProductResponseDTO> getAllProducts(int page, int size, String sort, String search, Long categoryId, String author) { // <-- ДОДАНО author
+    public Page<ProductResponseDTO> getAllProducts(int page, int size, String sort, String search,
+                                                   Long categoryId, String author,
+                                                   BigDecimal minPrice, BigDecimal maxPrice, List<Long> ids) {
 
         String[] sortParams = sort.split(",");
         String sortField = sortParams[0];
@@ -55,17 +61,12 @@ public class ProductService {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortField));
 
-        Page<Product> productPage;
+        boolean filterByIds = (ids != null && !ids.isEmpty());
 
-        if (categoryId != null) {
-            productPage = productRepository.findByCategoryId(categoryId, pageable);
-        } else if (author != null && !author.trim().isEmpty()) {
-            productPage = productRepository.findByAuthor(author, pageable);
-        } else if (search != null && !search.trim().isEmpty()) {
-            productPage = productRepository.findByTitleContainingIgnoreCase(search, pageable);
-        } else {
-            productPage = productRepository.findAll(pageable);
-        }
+        List<Long> safeIds = filterByIds ? ids : List.of(-1L);
+
+        Page<Product> productPage = productRepository.findWithFilters(
+                categoryId, author, search, minPrice, maxPrice, filterByIds, safeIds, pageable);
 
         return productPage.map(this::mapToDTO);
     }
@@ -82,7 +83,8 @@ public class ProductService {
                 .orElseThrow(() -> new ProductNotFoundException("Book with ID " + id + " was not found"));
 
         Category category = categoryRepository.findById(dto.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new CategoryNotFoundException("Category with ID " + dto.getCategoryId() + " not found"));
+
         if (product.getImageKey() != null && !product.getImageKey().equals(dto.getImageKey())) {
             fileService.deleteFileFromS3(product.getImageKey());
         }
@@ -94,6 +96,7 @@ public class ProductService {
         product.setImageKey(dto.getImageKey());
         product.setCategory(category);
         product.setAuthor(dto.getAuthor());
+        product.setDiscount(dto.getDiscount());
 
         Product savedProduct = productRepository.save(product);
         return mapToDTO(savedProduct);
@@ -117,6 +120,15 @@ public class ProductService {
     private ProductResponseDTO mapToDTO(Product product) {
         String categoryName = product.getCategory() != null ? product.getCategory().getName() : "Без категорії";
 
+        Double avgRating = 0.0;
+        if (product.getReviews() != null && !product.getReviews().isEmpty()) {
+            avgRating = product.getReviews().stream()
+                    .mapToInt(Review::getRating)
+                    .average()
+                    .orElse(0.0);
+            avgRating = Math.round(avgRating * 10.0) / 10.0;
+        }
+
         return new ProductResponseDTO(
                 product.getId(),
                 product.getTitle(),
@@ -125,7 +137,28 @@ public class ProductService {
                 product.getStockQuantity(),
                 product.getImageKey(),
                 categoryName,
-                product.getAuthor()
+                product.getAuthor(),
+                product.getDiscount(),
+                avgRating
         );
+    }
+
+    public ProductResponseDTO getBanner() {
+        return productRepository.findByIsBannerTrue()
+                .map(this::mapToDTO)
+                .orElse(null);
+    }
+
+    public void setBanner(Long productId) {
+        productRepository.findByIsBannerTrue().ifPresent(oldBanner -> {
+            oldBanner.setIsBanner(false);
+            productRepository.save(oldBanner);
+        });
+
+        Product newBanner = productRepository.findById(productId)
+                .orElseThrow(() -> new ProductNotFoundException("Book with ID " + productId + " was not found"));
+
+        newBanner.setIsBanner(true);
+        productRepository.save(newBanner);
     }
 }

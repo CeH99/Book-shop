@@ -44,7 +44,6 @@ public class OrderServiceTest {
     @Mock
     private EmailService emailService;
 
-    // 1. Додаємо мок для SQS
     @Mock
     private SqsService sqsService;
 
@@ -171,7 +170,6 @@ public class OrderServiceTest {
         assertEquals(Status.PAID, order.getStatus());
         verify(orderRepository).save(order);
 
-        // 2. Перевіряємо, що після оплати відправляється повідомлення про майбутню відправку (SHIPPED)
         verify(sqsService).sendOrderStatusUpdate(eq(1L), eq(Status.SHIPPED), eq(60));
     }
 
@@ -182,14 +180,13 @@ public class OrderServiceTest {
         when(orderRepository.findByPaymentToken(token)).thenReturn(Optional.empty());
 
         // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+        com.java.Bookshop.exception.InvalidPaymentTokenException exception = assertThrows(com.java.Bookshop.exception.InvalidPaymentTokenException.class, () -> {
             orderService.processPayment(token);
         });
 
         assertEquals("Недійсне посилання на оплату", exception.getMessage());
         verify(orderRepository, never()).save(any(Order.class));
 
-        // Переконуємось, що повідомлення в SQS не пішло
         verify(sqsService, never()).sendOrderStatusUpdate(anyLong(), any(Status.class), anyInt());
     }
 
@@ -205,15 +202,13 @@ public class OrderServiceTest {
 
         when(orderRepository.findByPaymentToken(token)).thenReturn(Optional.of(order));
 
-        // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+        com.java.Bookshop.exception.InvalidOrderStatusException exception = assertThrows(com.java.Bookshop.exception.InvalidOrderStatusException.class, () -> {
             orderService.processPayment(token);
         });
 
         assertEquals("Замовлення вже оплачено або скасовано", exception.getMessage());
         verify(orderRepository, never()).save(any(Order.class));
 
-        // Переконуємось, що повідомлення в SQS не пішло
         verify(sqsService, never()).sendOrderStatusUpdate(anyLong(), any(Status.class), anyInt());
     }
 }

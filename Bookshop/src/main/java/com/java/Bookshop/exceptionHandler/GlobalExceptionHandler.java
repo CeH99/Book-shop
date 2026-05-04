@@ -87,4 +87,92 @@ public class GlobalExceptionHandler {
         );
         return response;
     }
+
+    //Handling Category not found
+    @ResponseStatus(value = HttpStatus.NOT_FOUND)
+    @ExceptionHandler(value = CategoryNotFoundException.class)
+    public ApiErrorResponse handleCategoryNotFoundException(CategoryNotFoundException exception) {
+        return new ApiErrorResponse(
+                exception.getMessage(),
+                HttpStatus.NOT_FOUND.value(),
+                LocalDateTime.now()
+        );
+    }
+
+    //Handling Empty File
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(value = EmptyFileException.class)
+    public ApiErrorResponse handleEmptyFileException(EmptyFileException exception) {
+        return new ApiErrorResponse(
+                exception.getMessage(),
+                HttpStatus.BAD_REQUEST.value(),
+                LocalDateTime.now()
+        );
+    }
+
+    //Handling File Upload Error
+    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
+    @ExceptionHandler(value = FileUploadException.class)
+    public ApiErrorResponse handleFileUploadException(FileUploadException exception) {
+        return new ApiErrorResponse(
+                exception.getMessage(),
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                LocalDateTime.now()
+        );
+    }
+
+    //Handling User Not Found
+    @ResponseStatus(value = HttpStatus.NOT_FOUND)
+    @ExceptionHandler(value = UserNotFoundException.class)
+    public ApiErrorResponse handleUserNotFoundException(UserNotFoundException exception) {
+        return new ApiErrorResponse(
+                exception.getMessage(),
+                HttpStatus.NOT_FOUND.value(),
+                LocalDateTime.now()
+        );
+    }
+
+    //Handling Invalid Payment Token
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(value = InvalidPaymentTokenException.class)
+    public ApiErrorResponse handleInvalidPaymentTokenException(InvalidPaymentTokenException exception) {
+        return new ApiErrorResponse(
+                exception.getMessage(),
+                HttpStatus.BAD_REQUEST.value(),
+                LocalDateTime.now()
+        );
+    }
+
+    //Handling Invalid Order Status (e.g. already paid or shipped)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(value = InvalidOrderStatusException.class)
+    public ApiErrorResponse handleInvalidOrderStatusException(InvalidOrderStatusException exception) {
+        return new ApiErrorResponse(
+                exception.getMessage(),
+                HttpStatus.BAD_REQUEST.value(),
+                LocalDateTime.now()
+        );
+    }
+
+    //Handling Unauthorized access to an order
+    @ResponseStatus(value = HttpStatus.FORBIDDEN)
+    @ExceptionHandler(value = UnauthorizedOrderAccessException.class)
+    public ApiErrorResponse handleUnauthorizedOrderAccessException(UnauthorizedOrderAccessException exception) {
+        return new ApiErrorResponse(
+                exception.getMessage(),
+                HttpStatus.FORBIDDEN.value(),
+                LocalDateTime.now()
+        );
+    }
+
+    //Handling Review Not Found
+    @ResponseStatus(value = HttpStatus.NOT_FOUND)
+    @ExceptionHandler(value = ReviewNotFoundException.class)
+    public ApiErrorResponse handleReviewNotFoundException(ReviewNotFoundException exception) {
+        return new ApiErrorResponse(
+                exception.getMessage(),
+                HttpStatus.NOT_FOUND.value(),
+                LocalDateTime.now()
+        );
+    }
 }

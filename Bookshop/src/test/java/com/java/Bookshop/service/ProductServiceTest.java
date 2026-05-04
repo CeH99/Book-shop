@@ -55,7 +55,7 @@ class ProductServiceTest {
         savedProduct.setPrice(BigDecimal.valueOf(500));
         savedProduct.setStockQuantity(10);
         savedProduct.setCategory(category);
-        savedProduct.setAuthor("J.K. Rowling"); // ДОДАЛИ АВТОРА В ЗБЕРЕЖЕНУ СУТНІСТЬ
+        savedProduct.setAuthor("J.K. Rowling");
 
         when(productRepository.existsByTitle(requestDTO.getTitle())).thenReturn(false);
         when(categoryRepository.findById(requestDTO.getCategoryId())).thenReturn(Optional.of(category));
@@ -69,7 +69,7 @@ class ProductServiceTest {
         assertEquals(1L, result.getId());
         assertEquals("Harry Potter", result.getTitle());
         assertEquals("Фантастика", result.getCategoryName());
-        assertEquals("J.K. Rowling", result.getAuthor()); // ПЕРЕВІРЯЄМО, ЧИ АВТОР ПОВЕРНУВСЯ
+        assertEquals("J.K. Rowling", result.getAuthor());
 
         verify(categoryRepository).findById(1L);
         verify(productRepository).save(any(Product.class));
@@ -103,11 +103,11 @@ class ProductServiceTest {
         when(productRepository.existsByTitle(requestDTO.getTitle())).thenReturn(false);
         when(categoryRepository.findById(requestDTO.getCategoryId())).thenReturn(Optional.empty());
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+        com.java.Bookshop.exception.CategoryNotFoundException exception = assertThrows(com.java.Bookshop.exception.CategoryNotFoundException.class, () -> {
             productService.createProduct(requestDTO);
         });
 
-        assertEquals("Category not found", exception.getMessage());
+        assertEquals("Category with ID 99 not found", exception.getMessage());
         verify(productRepository, never()).save(any(Product.class));
     }
 

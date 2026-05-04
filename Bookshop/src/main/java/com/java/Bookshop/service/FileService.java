@@ -1,5 +1,7 @@
 package com.java.Bookshop.service;
 
+import com.java.Bookshop.exception.EmptyFileException;
+import com.java.Bookshop.exception.FileUploadException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -26,7 +28,7 @@ public class FileService {
 
     public String uploadFile(MultipartFile file) {
         if (file.isEmpty()) {
-            throw new RuntimeException("Файл порожній");
+            throw new EmptyFileException("Файл порожній");
         }
 
         String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename().replace(" ", "_");
@@ -43,7 +45,7 @@ public class FileService {
             return "https://" + bucketName + ".s3." + region + ".amazonaws.com/" + fileName;
 
         } catch (IOException e) {
-            throw new RuntimeException("Помилка завантаження файлу в S3", e);
+            throw new FileUploadException("Помилка завантаження файлу в S3", e);
         }
     }
 

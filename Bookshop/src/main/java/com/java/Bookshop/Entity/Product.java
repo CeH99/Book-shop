@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Entity
 @Table(name = "products")
@@ -38,4 +39,13 @@ public class Product {
 
     @Column(nullable = false)
     private String author;
+
+    @Column(name = "is_banner")
+    private Boolean isBanner = false;
+
+    @Column(name = "discount")
+    private Integer discount;
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Review> reviews;
 }

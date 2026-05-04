@@ -16,4 +16,6 @@ public class ProductResponseDTO {
     private String imageUrl;
     private String categoryName;
     private String author;
+    private Integer discount;
+    private Double averageRating;
 }
