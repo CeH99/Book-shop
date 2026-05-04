@@ -1,4 +1,4 @@
-const ORDERS_API_URL = 'http://localhost:8080/api/orders';
+const ORDERS_API_URL = 'http://51.20.122.240:8080/api/orders';
 
 document.addEventListener('DOMContentLoaded', () => {
     renderCart();
@@ -39,7 +39,7 @@ async function renderCart() {
         const item = cart[i];
         
         try {
-            const response = await fetch(`http://localhost:8080/api/products/${item.productId}`);
+            const response = await fetch(`http://51.20.122.240:8080/api/products/${item.productId}`);
             if (!response.ok) throw new Error();
             const product = await response.json();
 

@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:8080/api/products';
+const API_URL = 'http://51.20.122.240:8080/api/products';
 
 document.addEventListener('DOMContentLoaded', async () => {
     if (typeof window.initWishlistCache === 'function') {
@@ -120,7 +120,7 @@ async function loadReviews(bookId) {
     reviewsSection.style.display = 'block';
 
     try {
-        const response = await fetch(`http://localhost:8080/api/reviews/product/${bookId}`);
+        const response = await fetch(`http://51.20.122.240:8080/api/reviews/product/${bookId}`);
         if (!response.ok) throw new Error('Не вдалося завантажити відгуки');
 
         const reviews = await response.json();
@@ -181,7 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 submitBtn.disabled = true;
                 submitBtn.innerText = 'Надсилання...';
 
-                const response = await fetch('http://localhost:8080/api/reviews', {
+                const response = await fetch('http://51.20.122.240:8080/api/reviews', {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',

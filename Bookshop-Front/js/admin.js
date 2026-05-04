@@ -1,6 +1,6 @@
-const API_PRODUCTS_URL = 'http://localhost:8080/api/products';
-const API_ORDERS_URL = 'http://localhost:8080/api/orders';
-const API_CATEGORIES_URL = 'http://localhost:8080/api/categories';
+const API_PRODUCTS_URL = 'http://51.20.122.240:8080/api/products';
+const API_ORDERS_URL = 'http://51.20.122.240:8080/api/orders';
+const API_CATEGORIES_URL = 'http://51.20.122.240:8080/api/categories';
 
 let categoriesList = []; 
 let allProducts = [];
@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     try {
-        const checkResponse = await fetch('http://localhost:8080/api/users/check-admin', { 
+        const checkResponse = await fetch('http://51.20.122.240:8080/api/users/check-admin', { 
             method: 'GET',
             headers: { 'Authorization': `Bearer ${token}` }
         });

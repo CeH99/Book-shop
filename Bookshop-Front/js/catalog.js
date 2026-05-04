@@ -1,6 +1,6 @@
-const API_URL = 'http://localhost:8080/api/products';
-const API_CATEGORIES_URL = 'http://localhost:8080/api/categories';
-const API_AUTHORS_URL = 'http://localhost:8080/api/products/authors';
+const API_URL = 'http://51.20.122.240:8080/api/products';
+const API_CATEGORIES_URL = 'http://51.20.122.240:8080/api/categories';
+const API_AUTHORS_URL = 'http://51.20.122.240:8080/api/products/authors';
 
 let currentPage = 0;
 const pageSize = 8; 
@@ -213,7 +213,7 @@ async function fetchAuthors() {
 async function fetchBanner() {
     const container = document.getElementById('hero-banner-container');
     try {
-        const response = await fetch('http://localhost:8080/api/products/banner');
+        const response = await fetch('http://51.20.122.240:8080/api/products/banner');
         if (response.status === 204 || !response.ok) {
             container.innerHTML = '';
             return;

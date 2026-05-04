@@ -1,4 +1,4 @@
-const WISHLIST_API_URL = 'http://localhost:8080/api/wishlist';
+const WISHLIST_API_URL = 'http://51.20.122.240:8080/api/wishlist';
 
 document.addEventListener('DOMContentLoaded', () => {
     fetchWishlist();

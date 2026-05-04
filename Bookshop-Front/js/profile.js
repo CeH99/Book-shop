@@ -1,4 +1,4 @@
-const MY_ORDERS_URL = 'http://localhost:8080/api/orders/my';
+const MY_ORDERS_URL = 'http://51.20.122.240:8080/api/orders/my';
 
 document.addEventListener('DOMContentLoaded', () => {
     loadUserInfo();
@@ -13,7 +13,7 @@ async function loadUserInfo() {
     if (!token) return;
 
     try {
-        const response = await fetch('http://localhost:8080/api/users/me', {
+        const response = await fetch('http://51.20.122.240:8080/api/users/me', {
             method: 'GET',
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             try {
-                const response = await fetch('http://localhost:8080/api/users/me', {
+                const response = await fetch('http://51.20.122.240:8080/api/users/me', {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify(requestData)
@@ -173,7 +173,7 @@ async function cancelOrder(orderId) {
 
     const token = localStorage.getItem('jwt_token');
     try {
-        const response = await fetch(`http://localhost:8080/api/orders/${orderId}/cancel`, {
+        const response = await fetch(`http://51.20.122.240:8080/api/orders/${orderId}/cancel`, {
             method: 'PATCH',
             headers: { 'Authorization': `Bearer ${token}` }
         });

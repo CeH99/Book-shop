@@ -83,7 +83,7 @@ window.initWishlistCache = async function() {
     if (!token) return;
 
     try {
-        const response = await fetch('http://localhost:8080/api/wishlist', {
+        const response = await fetch('http://51.20.122.240:8080/api/wishlist', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (response.ok) {
@@ -117,7 +117,7 @@ window.toggleWishlist = async function(productId, event) {
     if (btn) btn.style.pointerEvents = 'none';
 
     try {
-        const response = await fetch(`http://localhost:8080/api/wishlist/${productId}`, {
+        const response = await fetch(`http://51.20.122.240:8080/api/wishlist/${productId}`, {
             method,
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -202,7 +202,7 @@ window.renderMiniCart = async function() {
         const itemTotal = item.price * item.quantity;
         let imageSrc = 'https://placehold.co/50x75?text=No+Cover';
         try {
-            const res = await fetch(`http://localhost:8080/api/products/${item.productId}`);
+            const res = await fetch(`http://51.20.122.240:8080/api/products/${item.productId}`);
             if (res.ok) {
                 const prod = await res.json();
                 imageSrc = prod.imageUrl || prod.imageKey || imageSrc;
