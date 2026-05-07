@@ -12,12 +12,12 @@
 	<groupId>com.java</groupId>
 	<artifactId>Bookshop</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>Bookshop</name>  <!-- Fix: was <n> -->
+	<name>Bookshop</name>
 	<description>Coursework project</description>
 
 	<properties>
 		<java.version>21</java.version>
-		<lombok.version>1.18.36</lombok.version>  <!-- Fix: 1.18.32 → 1.18.36 (JDK 21 compatible) -->
+		<lombok.version>1.18.36</lombok.version>
 	</properties>
 
 	<dependencies>
@@ -51,8 +51,6 @@
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-database-postgresql</artifactId>
 		</dependency>
-
-		<!-- Fix: JJWT 0.11.5 → 0.12.6 (modern API, better JDK 21 support) -->
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-api</artifactId>

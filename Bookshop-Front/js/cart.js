@@ -71,7 +71,13 @@ async function renderCart() {
                     </a>
                 </td>
                 <td>${priceHtml}</td>
-                <td style="font-weight: 600; color: #555;">${item.quantity} шт.</td>
+                <td>
+                    <div class="quantity-controls">
+                        <button class="btn-qty" onclick="changeQuantity(${i}, -1)">−</button>
+                        <span class="qty-value">${item.quantity}</span>
+                        <button class="btn-qty" onclick="changeQuantity(${i}, 1)">+</button>
+                    </div>
+                </td>
                 <td><strong style="font-size: 18px; color: #222;">${itemSum} грн</strong></td>
                 <td>
                     <button class="btn-remove" onclick="removeFromCart(${i})">Видалити</button>
@@ -165,4 +171,20 @@ function removeFromCart(index) {
     cart.splice(index, 1);
     localStorage.setItem('cart', JSON.stringify(cart));
     renderCart();
+}
+
+function changeQuantity(index, delta) {
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    
+    if (cart[index]) {
+        cart[index].quantity += delta;
+        
+        if (cart[index].quantity <= 0) {
+            removeFromCart(index);
+            return;
+        }
+        
+        localStorage.setItem('cart', JSON.stringify(cart));
+        renderCart();
+    }
 }

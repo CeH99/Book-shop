@@ -419,7 +419,7 @@ async function uploadImageToS3(file) {
     formData.append("file", file);
     const token = localStorage.getItem('jwt_token');
 
-    const response = await fetch('http://localhost:8080/api/files/upload', {
+    const response = await fetch('http://51.20.122.240:8080/api/files/upload', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: formData
@@ -434,7 +434,7 @@ async function uploadImageToS3(file) {
 async function loadBannerOptions() {
     const select = document.getElementById('banner-select');
     try {
-        const response = await fetch('http://localhost:8080/api/products?size=100');
+        const response = await fetch('http://51.20.122.240:8080/api/products?size=100');
         const data = await response.json();
         const products = data.content || data;
         
@@ -454,7 +454,7 @@ async function saveBanner() {
 
     const token = localStorage.getItem('jwt_token');
     try {
-        const res = await fetch(`http://localhost:8080/api/products/banner/${bookId}`, {
+        const res = await fetch(`http://51.20.122.240:8080/api/products/banner/${bookId}`, {
             method: 'PUT',
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -476,7 +476,7 @@ async function loadAdminReviews() {
     const token = localStorage.getItem('jwt_token');
 
     try {
-        const response = await fetch('http://localhost:8080/api/reviews', {
+        const response = await fetch('http://51.20.122.240:8080/api/reviews', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -523,7 +523,7 @@ async function deleteAdminReview(id) {
     if (!confirm(`Ви впевнені, що хочете остаточно видалити відгук #${id}?`)) return;
 
     try {
-        const response = await fetch(`http://localhost:8080/api/reviews/${id}`, {
+        const response = await fetch(`http://51.20.122.240:8080/api/reviews/${id}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}` }
         });
