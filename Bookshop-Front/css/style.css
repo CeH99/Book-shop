@@ -1,20 +1,35 @@
+/* ==========================================================================
+   1. IMPORTS & VARIABLES
+   ========================================================================== */
+
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap');
 
-/* VARIABLES */
 :root {
+    /* Brand Colors */
     --primary-color: #c91818;
     --primary-hover: #a01313;
+    
+    /* Text Colors */
     --text-main: #2b2b2b;
     --text-muted: #757575;
+    
+    /* Background Colors */
     --bg-main: #fcfcfc;
     --bg-card: #ffffff;
+    
+    /* Borders & Spacing */
     --border-soft: #eaeaea;
     --radius-main: 10px;
+    
+    /* Shadows */
     --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.04);
     --shadow-hover: 0 10px 25px rgba(0, 0, 0, 0.08);
 }
 
-/* RESET */
+/* ==========================================================================
+   2. RESET & BASE STYLES
+   ========================================================================== */
+
 * {
     margin: 0;
     padding: 0;
@@ -22,7 +37,6 @@
     font-family: 'Nunito', sans-serif;
 }
 
-/* BASE STYLES */
 body {
     background-color: #f4f7f6;
     background-image: 
@@ -43,7 +57,10 @@ a:hover {
     color: #2980b9;
 }
 
-/* LAYOUT */
+/* ==========================================================================
+   3. LAYOUT
+   ========================================================================== */
+
 .main-content {
     max-width: 1200px;
     margin: 50px auto;
@@ -67,7 +84,11 @@ a:hover {
     align-items: center;
 }
 
-/* UI COMPONENTS */
+/* ==========================================================================
+   4. UI COMPONENTS
+   ========================================================================== */
+
+/* Buttons */
 .btn-buy {
     background-color: var(--primary-color);
     color: white;
@@ -96,6 +117,7 @@ a:hover {
     transform: none;
 }
 
+/* Form Inputs */
 input[type="text"],
 input[type="email"],
 input[type="password"],
@@ -121,6 +143,7 @@ input:focus, select:focus, textarea:focus {
     box-shadow: 0 0 0 3px rgba(201, 24, 24, 0.1);
 }
 
+/* Badges */
 .badge-new {
     position: absolute;
     top: 15px;
@@ -150,7 +173,49 @@ input:focus, select:focus, textarea:focus {
     box-shadow: 0 2px 5px rgba(231, 76, 60, 0.4);
 }
 
-/* HEADER & NAVIGATION */
+/* Modals */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-box {
+    background: var(--bg-card);
+    padding: 30px;
+    border-radius: var(--radius-main);
+    width: 100%;
+    max-width: 450px;
+    box-shadow: var(--shadow-hover);
+}
+
+.modal-box input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    margin-top: 5px;
+    transition: border-color 0.2s;
+}
+
+.modal-box input:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(201, 24, 24, 0.1);
+}
+
+/* ==========================================================================
+   5. HEADER & NAVIGATION
+   ========================================================================== */
+
 .site-header {
     background-color: #1a1a1a; 
     border-bottom: none;
@@ -185,7 +250,7 @@ input:focus, select:focus, textarea:focus {
     color: var(--primary-color);
 }
 
-/* Dropdowns */
+/* Profile Dropdown */
 .profile-dropdown {
     position: relative;
     display: inline-block;
@@ -246,6 +311,7 @@ input:focus, select:focus, textarea:focus {
     color: var(--primary-color);
 }
 
+/* Cart Dropdown */
 .cart-dropdown {
     position: relative;
     display: inline-flex;
@@ -277,7 +343,11 @@ input:focus, select:focus, textarea:focus {
     animation: fadeInCart 0.2s ease-out forwards;
 }
 
-/* PRODUCT COMPONENTS */
+/* ==========================================================================
+   6. PRODUCT COMPONENTS
+   ========================================================================== */
+
+/* Product Grid */
 .products-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -285,6 +355,7 @@ input:focus, select:focus, textarea:focus {
     align-items: stretch; 
 }
 
+/* Book Card */
 .book-card {
     position: relative;
     background: var(--bg-card);
@@ -336,6 +407,7 @@ input:focus, select:focus, textarea:focus {
     letter-spacing: -0.5px;
 }
 
+/* Ratings */
 .book-rating {
     color: #f39c12;
     font-size: 16px;
@@ -353,64 +425,7 @@ input:focus, select:focus, textarea:focus {
     margin-left: 5px;
 }
 
-/* HERO BANNER */
-.hero-banner {
-    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-    border-radius: 12px;
-    padding: 40px 60px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 50px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-    color: white;
-}
-
-.hero-banner-content {
-    max-width: 60%;
-}
-
-.hero-badge {
-    background: #c91818;
-    color: white;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: bold;
-    text-transform: uppercase;
-    display: inline-block;
-    margin-bottom: 15px;
-    letter-spacing: 1px;
-}
-
-.hero-title {
-    font-size: 42px;
-    font-weight: 800;
-    margin-bottom: 15px;
-    line-height: 1.2;
-}
-
-.hero-author {
-    font-size: 20px;
-    color: #a0a0a0;
-    margin-bottom: 25px;
-}
-
-.hero-image {
-    width: 220px;
-    height: 330px;
-    object-fit: cover;
-    border-radius: 8px;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.3);
-    transform: rotate(5deg);
-    transition: transform 0.3s ease;
-}
-
-.hero-image:hover {
-    transform: rotate(0deg) scale(1.05);
-}
-
-/* REVIEWS */
+/* Reviews */
 .review-card {
     background: #fff;
     border: 1px solid #eee;
@@ -474,13 +489,221 @@ input:focus, select:focus, textarea:focus {
     color: #444;
 }
 
-/* ANIMATIONS */
+/* ==========================================================================
+   7. HERO BANNER
+   ========================================================================== */
+
+.hero-banner {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    border-radius: 12px;
+    padding: 40px 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 50px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    color: white;
+}
+
+.hero-banner-content {
+    max-width: 60%;
+}
+
+.hero-badge {
+    background: #c91818;
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+    display: inline-block;
+    margin-bottom: 15px;
+    letter-spacing: 1px;
+}
+
+.hero-title {
+    font-size: 42px;
+    font-weight: 800;
+    margin-bottom: 15px;
+    line-height: 1.2;
+}
+
+.hero-author {
+    font-size: 20px;
+    color: #a0a0a0;
+    margin-bottom: 25px;
+}
+
+.hero-image {
+    width: 220px;
+    height: 330px;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+    transform: rotate(5deg);
+    transition: transform 0.3s ease;
+}
+
+.hero-image:hover {
+    transform: rotate(0deg) scale(1.05);
+}
+
+/* ==========================================================================
+   8. PROFILE DASHBOARD
+   ========================================================================== */
+
+.profile-dashboard {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 30px;
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+/* User Info Sidebar */
+.user-sidebar {
+    background: var(--bg-card);
+    border-radius: var(--radius-main);
+    padding: 30px;
+    box-shadow: var(--shadow-soft);
+    border: 1px solid var(--border-soft);
+    height: fit-content;
+}
+
+.user-sidebar h2 {
+    font-size: 22px;
+    margin-bottom: 20px;
+    color: var(--text-main);
+}
+
+.info-item {
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-soft);
+    padding-bottom: 12px;
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+}
+
+.info-value {
+    font-size: 16px;
+    color: var(--text-main);
+    font-weight: 600;
+    word-break: break-all;
+}
+
+/* Orders Container */
+.orders-container {
+    background: var(--bg-card);
+    border-radius: var(--radius-main);
+    padding: 35px;
+    box-shadow: var(--shadow-soft);
+    border: 1px solid var(--border-soft);
+}
+
+.order-card {
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-main);
+    padding: 24px;
+    margin-bottom: 20px;
+    background: var(--bg-card);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.order-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+    border-color: #cbd5e1;
+}
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-soft);
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+}
+
+/* Status Indicators */
+.order-status {
+    font-weight: 700;
+    font-size: 12px;
+    padding: 6px 14px;
+    border-radius: 50px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-PENDING { background-color: #fef3c7; color: #d97706; }
+.status-SHIPPED { background-color: #dcfce7; color: #15803d; }
+.status-CANCELLED { background-color: #fee2e2; color: #b91c1c; }
+
+/* Profile Actions */
+.btn-action {
+    width: 100%;
+    padding: 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+    margin-top: 10px;
+    color: var(--text-main);
+}
+
+.btn-action:hover {
+    background: #f8f9fa;
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.btn-logout {
+    background: #fff5f5;
+    color: #e53e3e;
+    border: 1px solid #feb2b2;
+}
+
+.btn-logout:hover {
+    background: #e53e3e;
+    color: #fff;
+    border-color: #e53e3e;
+}
+
+/* ==========================================================================
+   9. ANIMATIONS
+   ========================================================================== */
+
 @keyframes fadeInCart {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* RESPONSIVE DESIGN */
+/* ==========================================================================
+   10. MEDIA QUERIES
+   ========================================================================== */
+
+/* Tablet & Mobile (850px) */
+@media (max-width: 850px) {
+    .profile-dashboard {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Standard Mobile (768px) */
 @media (max-width: 768px) {
     body {
         font-size: 16px;
@@ -529,7 +752,7 @@ input:focus, select:focus, textarea:focus {
         to { opacity: 1; transform: translate(50%, 0); }
     }
 
-    /* Hero Banner */
+    /* Hero Banner Mobile */
     .hero-banner {
         flex-direction: column;
         padding: 30px 20px;
@@ -555,7 +778,7 @@ input:focus, select:focus, textarea:focus {
         transform: scale(1.05);
     }
 
-    /* Product Grid */
+    /* Product Grid Mobile */
     .products-grid {
         grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
         gap: 20px;
@@ -566,7 +789,7 @@ input:focus, select:focus, textarea:focus {
         aspect-ratio: 2 / 3;
     }
 
-    /* Book Details */
+    /* Book Details Mobile */
     .book-details-container {
         flex-direction: column !important; 
         gap: 20px !important;
@@ -606,7 +829,7 @@ input:focus, select:focus, textarea:focus {
         padding: 15px !important;
     }
 
-    /* Admin Panel */
+    /* Admin Panel Mobile */
     .tab-pane .d-flex.justify-content-between {
         flex-direction: column;
         align-items: stretch !important;
@@ -625,12 +848,13 @@ input:focus, select:focus, textarea:focus {
     .nav-tabs::-webkit-scrollbar {
         height: 4px;
     }
+
     .nav-tabs::-webkit-scrollbar-thumb {
         background-color: #ccc;
         border-radius: 4px;
     }
 
-    /* Catalog */
+    /* Catalog Mobile */
     .catalog-layout {
         flex-direction: column !important; 
         gap: 20px !important;
@@ -659,7 +883,7 @@ input:focus, select:focus, textarea:focus {
         gap: 15px !important;
     }
 
-    /* Cart */
+    /* Cart Mobile */
     #cart-container {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch; 
@@ -676,7 +900,7 @@ input:focus, select:focus, textarea:focus {
         padding: 15px !important;
     }
     
-    /* Auth Forms */
+    /* Auth Forms Mobile */
     .auth-container {
         margin: 20px auto !important; 
         padding: 20px !important;
@@ -684,7 +908,7 @@ input:focus, select:focus, textarea:focus {
         box-sizing: border-box;
     }
 
-    /* Profile */
+    /* Profile Mobile */
     .main-content section div[style*="grid-template-columns"] {
         grid-template-columns: 1fr !important;
         row-gap: 15px !important;
@@ -721,7 +945,7 @@ input:focus, select:focus, textarea:focus {
         width: 95% !important; 
     }
 
-    /* Wishlist */
+    /* Wishlist Mobile */
     .wishlist-empty {
         padding: 40px 15px !important;
     }
@@ -739,6 +963,7 @@ input:focus, select:focus, textarea:focus {
     }
 }
 
+/* Small Mobile (400px) */
 @media (max-width: 400px) {
     .cart-dropdown-content {
         min-width: 280px;
