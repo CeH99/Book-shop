@@ -1,16 +1,16 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/bookshop_test_db
+    url: jdbc:postgresql://localhost:5432/bookshop-db
     username: postgres
-    password: 1806783291
+    password: 1806783291Zx#
     driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none  # validate
 
   flyway:
-    enabled: true
+    enabled: false
     locations: classpath:db/migration
     baseline-on-migrate: true
 
